@@ -1,0 +1,57 @@
+# Python & Virtual Environments
+
+**pycache**/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+
+# Jupyter Notebooks
+
+.ipynb_checkpoints/
+
+# IDE & System
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Environment variables
+
+.env
+
+# Data (structured management)
+
+data/raw/
+data/interim/
+
+# Ignore large data files only inside data/
+
+data/**/*.csv
+data/**/*.xlsx
+data/**/*.json
+
+# Allow processed & optimized data
+
+!data/processed/
+!data/processed/*.parquet
+
+# Streamlit
+
+.streamlit/config.toml
+.streamlit/secrets.toml
+
+# Distribution & Cache
+
+build/
+dist/
+*.egg-info/
+.cache/
+
+# Logs & temp files
+
+*.log
+tmp/
+temp/
