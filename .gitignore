@@ -1,6 +1,6 @@
 # Python & Virtual Environments
 
-**pycache**/
+__pycache__/
 *.py[cod]
 *$py.class
 venv/
@@ -33,6 +33,7 @@ data/interim/
 data/**/*.csv
 data/**/*.xlsx
 data/**/*.json
+data/**/*.html
 
 # Allow processed & optimized data
 

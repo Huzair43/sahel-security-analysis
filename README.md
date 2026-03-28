@@ -85,6 +85,11 @@ sahel-security-analysis/
 ├── data/              # Raw and processed datasets
 ├── notebooks/         # Exploratory analysis
 ├── app/               # Streamlit dashboard
+├── config/            # Settings loader (env vars)
+├── src/               # Data pipeline code
+├── main.py            # Pipeline entrypoint
+├── debug.py           # API diagnostics
+├── debug2.py          # API diagnostics
 ├── README.md
 └── requirements.txt
 ```

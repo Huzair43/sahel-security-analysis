@@ -1,14 +1,15 @@
 import requests
-from config.config import ACLED_USERNAME, ACLED_PASSWORD, ACLED_TOKEN_URL
+from config.settings import get_settings
 
 # Step 1: Get token
 print("Step 1: Authenticating...")
+s = get_settings()
 response = requests.post(
-    ACLED_TOKEN_URL,
+    s.acled_token_url,
     headers={"Content-Type": "application/x-www-form-urlencoded"},
     data={
-        "username":   ACLED_USERNAME,
-        "password":   ACLED_PASSWORD,
+        "username":   s.acled_username,
+        "password":   s.acled_password,
         "grant_type": "password",
         "client_id":  "acled",
     },
@@ -21,7 +22,7 @@ headers = {
     "Content-Type":  "application/json",
 }
 
-BASE = "https://acleddata.com/api/acled/read?_format=json"
+BASE = s.acled_base_url
 
 # Step 2: Simplest possible request (no filters at all)
 print("Step 2: Minimal request (limit=5, no filters)...")

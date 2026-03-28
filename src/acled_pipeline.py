@@ -2,12 +2,7 @@ import requests
 import pandas as pd
 import os
 from datetime import datetime
-from config.config import (
-    ACLED_USERNAME, ACLED_PASSWORD,
-    ACLED_TOKEN_URL, ACLED_BASE_URL,
-    COUNTRIES, START_DATE,
-    DATA_RAW_PATH, DATA_PROCESSED_PATH
-)
+from config.settings import get_settings
 
 
 class ACLEDPipeline:
@@ -18,9 +13,29 @@ class ACLEDPipeline:
     """
 
     def __init__(self):
+        self.settings = get_settings()
         self.token         = None
         self.refresh_token = None
+        self.session = requests.Session()
         self._authenticate()
+
+    def _request_json(
+        self,
+        method: str,
+        url: str,
+        *,
+        retry_on_unauthorized: bool = True,
+        **kwargs,
+    ) -> dict:
+        response = self.session.request(method, url, **kwargs)
+        if response.status_code == 401 and retry_on_unauthorized and self.refresh_token:
+            self._refresh_access_token()
+            response = self.session.request(method, url, **kwargs)
+        response.raise_for_status()
+        try:
+            return response.json()
+        except ValueError as e:
+            raise Exception(f"ACLED API returned a non-JSON response: {response.text[:200]}") from e
 
     # ------------------------------------------------------------------
     # 0. AUTHENTICATION
@@ -28,15 +43,16 @@ class ACLEDPipeline:
     def _authenticate(self):
         """Obtain an OAuth2 access token and refresh token."""
         print("Authenticating with ACLED API...")
-        response = requests.post(
-            ACLED_TOKEN_URL,
+        response = self.session.post(
+            self.settings.acled_token_url,
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             data={
-                "username":   ACLED_USERNAME,
-                "password":   ACLED_PASSWORD,
+                "username":   self.settings.acled_username,
+                "password":   self.settings.acled_password,
                 "grant_type": "password",
                 "client_id":  "acled",
             },
+            timeout=self.settings.request_timeout_s,
         )
         if response.status_code == 200:
             data               = response.json()
@@ -45,20 +61,21 @@ class ACLEDPipeline:
             print("Authentication successful. Token valid for 24 hours.")
         else:
             raise Exception(
-                f"Authentication failed: {response.status_code} — {response.text}"
+                f"Authentication failed: {response.status_code} - {response.text}"
             )
 
     def _refresh_access_token(self):
         """Renew the access token using the refresh token (valid 14 days)."""
         print("Refreshing access token...")
-        response = requests.post(
-            ACLED_TOKEN_URL,
+        response = self.session.post(
+            self.settings.acled_token_url,
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             data={
                 "refresh_token": self.refresh_token,
                 "grant_type":    "refresh_token",
                 "client_id":     "acled",
             },
+            timeout=self.settings.request_timeout_s,
         )
         if response.status_code == 200:
             data               = response.json()
@@ -85,21 +102,26 @@ class ACLEDPipeline:
         page       = 1
 
         while True:
-            url = (
-                f"https://acleddata.com/api/acled/read?_format=json"
-                f"&country={country}"
-                f"&event_date={START_DATE}"
-                f"&event_date_where=BETWEEN"
-                f"&event_date={START_DATE}|2026-12-31"
-                f"&limit={page_size}"
-                f"&page={page}"
-                f"&fields=event_id_cnty|event_date|event_type|sub_event_type|"
-                f"disorder_type|actor1|actor2|country|admin1|admin2|"
-                f"location|latitude|longitude|fatalities|notes"
-            )
+            params = {
+                "country": country,
+                "event_date": f"{self.settings.start_date}|{self.settings.end_date}",
+                "event_date_where": "BETWEEN",
+                "limit": page_size,
+                "page": page,
+                "fields": (
+                    "event_id_cnty|event_date|event_type|sub_event_type|"
+                    "disorder_type|actor1|actor2|country|admin1|admin2|"
+                    "location|latitude|longitude|fatalities|notes"
+                ),
+            }
 
-            response  = requests.get(url, headers=self._headers)
-            json_data = response.json()
+            json_data = self._request_json(
+                "GET",
+                self.settings.acled_base_url,
+                headers=self._headers,
+                params=params,
+                timeout=self.settings.request_timeout_s,
+            )
 
             if json_data.get("status") != 200:
                 print(f"  API error on page {page} for {country}: {json_data}")
@@ -130,11 +152,11 @@ class ACLEDPipeline:
         Fetch data for all Sahel countries individually and merge.
         Separate requests per country to avoid ACLED's OR syntax issues.
         """
-        print(f"Fetching data for: {', '.join(COUNTRIES)}")
-        print(f"Date range: {START_DATE} to today\n")
+        print(f"Fetching data for: {', '.join(self.settings.countries)}")
+        print(f"Date range: {self.settings.start_date} to {self.settings.end_date}\n")
 
         all_frames = []
-        for country in COUNTRIES:
+        for country in self.settings.countries:
             df = self.fetch_country(country, page_size)
             if not df.empty:
                 all_frames.append(df)
@@ -202,12 +224,12 @@ class ACLEDPipeline:
         - Raw file: timestamped, kept for historical reference
         - Processed file: always overwritten with the latest clean data
         """
-        os.makedirs(DATA_RAW_PATH,       exist_ok=True)
-        os.makedirs(DATA_PROCESSED_PATH, exist_ok=True)
+        os.makedirs(self.settings.data_raw_path,       exist_ok=True)
+        os.makedirs(self.settings.data_processed_path, exist_ok=True)
 
         today          = datetime.today().strftime("%Y-%m-%d")
-        raw_path       = f"{DATA_RAW_PATH}acled_raw_{today}.csv"
-        processed_path = f"{DATA_PROCESSED_PATH}acled_processed.csv"
+        raw_path       = f"{self.settings.data_raw_path}acled_raw_{today}.csv"
+        processed_path = f"{self.settings.data_processed_path}acled_processed.csv"
 
         df.to_csv(raw_path,       index=False)
         df.to_csv(processed_path, index=False)
@@ -221,7 +243,7 @@ class ACLEDPipeline:
     def summary(self, df: pd.DataFrame):
         """Print a quick overview of the collected dataset."""
         print("\n" + "="*55)
-        print("DATASET SUMMARY — SAHEL CONFLICT MONITOR")
+        print("DATASET SUMMARY - SAHEL CONFLICT MONITOR")
         print("="*55)
         print(f"Date range      : {df['event_date'].min().date()} -> {df['event_date'].max().date()}")
         print(f"Total incidents : {len(df):,}")
