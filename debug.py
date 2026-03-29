@@ -15,7 +15,7 @@ response = requests.post(
     },
 )
 token = response.json()["access_token"]
-print(f"Token obtained: {token[:30]}...\n")
+print("Token obtained (masked).\n")
 
 headers = {
     "Authorization": f"Bearer {token}",
