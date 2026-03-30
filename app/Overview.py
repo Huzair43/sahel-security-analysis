@@ -50,8 +50,9 @@ with st.sidebar:
     selected_years = st.slider(
         "Year range",
         min_value=2020, max_value=2025,
-        value=(2020, 2025),
+        value=st.session_state.get("years", (2020, 2025)),
         label_visibility="collapsed",
+        key="sidebar_years",
     )
     selected_event_types = st.multiselect(
         "Event types",
@@ -82,7 +83,7 @@ monthly_f = monthly[
 # ── Page header ───────────────────────────────────────────
 page_header(
     title="Security Analysis",
-    subtitle="Armed conflict dynamics in the Sahel — Burkina Faso, Mali, Niger"
+    subtitle="Armed conflict dynamics in the Sahel: Burkina Faso, Mali, Niger"
 )
 
 # ── KPI row ───────────────────────────────────────────────
@@ -206,3 +207,4 @@ with st.expander("View raw data sample (50 rows)"):
         df_f.sort_values("event_date", ascending=False).head(50),
         use_container_width=True,
     )
+
