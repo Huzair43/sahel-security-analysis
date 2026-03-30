@@ -18,9 +18,9 @@ Current progress:
 
 ## Overview
 
-The Sahel region, particularly the AES zone (Burkina Faso, Mali, Niger), has become one of the most unstable areas in the world over the past decade. While large volumes of conflict data exist, they are rarely explored in depth within data science portfolios.
+The Sahel region, particularly the AES zone (Burkina Faso, Mali, Niger), continues to experience overlapping security and economic shocks. The dataset produced by the pipeline is designed to feed both descriptive dashboards and causal/statistical modeling that explains how violence, prices, and policy signals co-move.
 
-This project aims to provide a structured, data-driven analysis of security incidents and explore their relationship with key economic indicators.
+The goal is to combine rigorous time-series modeling with transparent dashboards so that technical partners and policy stakeholders can interrogate both trends (exploratory) and credible model-based statements about uncertainty and confounding.
 
 ---
 
@@ -41,7 +41,52 @@ This project aims to provide a structured, data-driven analysis of security inci
 * **FAOSTAT**: Food price data
 * **UEMOA**:Macroeconomic indicators
 
----
+---  
+
+## Modeling roadmap
+
+1. **Bayesian VAR with explicit uncertainty** – build a hierarchical VAR that pools across Burkina Faso, Mali, and Niger while allowing parameter uncertainty to propagate into credible intervals for impulse responses. The model will rely on `statsmodels`, `pymc`, and `arviz` to sample the posterior and report `95%` intervals for projected incidents, fatalities, and inflation.
+2. **Confounder controls** – include lagged economic variables, conflict intensity indices, and seasonality dummies to control for omitted variable bias when estimating cross-series effects. The pipeline already creates lagged incidents/fatalities/intensity, and we extend this with conditional regressions inside the Bayesian VAR.
+3. **Dashboard-ready outputs** – surface the posterior distributions as fan charts in the dashboard so end users see both the median forecast and the associated uncertainty bands.
+
+---  
+
+## Quickstart
+
+1. Create a virtual environment and install dependencies:
+
+   ```bash
+   python -m venv .venv
+   ./.venv/Scripts/activate  # use `./.venv/bin/activate` on macOS/Linux
+   pip install -r requirements.txt
+   ```
+
+2. Configure credentials and overrides:
+   * Copy `.env.example` to `.env`.
+   * Set `ACLED_USERNAME` and `ACLED_PASSWORD`; optionally override `START_DATE`, `END_DATE`, `COUNTRIES`, `DATA_RAW_PATH`, or `DATA_PROCESSED_PATH` in the same `.env`.
+
+3. Run the pipeline:
+
+   ```bash
+   python main.py
+   ```
+
+   After the run you will find `data/raw/acled_raw_<date>.csv` plus the latest `data/processed/acled_processed.csv`, `monthly_*`, and `conflict_inflation_joined.csv`.
+
+4. Launch the dashboard (Streamlit):
+
+   ```bash
+   cd app
+   streamlit run app.py
+   ```
+
+   The dashboard reads `data/processed/acled_processed.csv` and caches aggregated views via `app/utils/data_loader.py`.
+
+5. Inspect modeling notebooks:
+   * Open `notebooks/03_temporal_analysis.ipynb` to follow the Bayesian VAR scaffolding and credible interval outputs; it now loads secrets from `.env`.
+   * Clean or rerun the other notebooks (`notebooks/01_data_exploration.ipynb`, `notebooks/02_interactive_map.ipynb`) if you want fresher snapshots or smaller output sizes.
+
+---  
 
 ## Key Features (Planned)
 
