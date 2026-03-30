@@ -19,18 +19,6 @@ apply_global_style()
 df      = load_main_data()
 monthly = load_monthly_by_country()
 
-st.markdown("### Filters")
-selected_years = st.slider(
-    "Year range",
-    min_value=2020,
-    max_value=2025,
-    value=st.session_state.get("years", (2020, 2025)),
-    format="%d",
-    help="Adjust this slider directly on mobile or desktop to set the look-back window.",
-)
-st.session_state["years"] = selected_years
-st.markdown("---")
-
 # ── Sidebar ───────────────────────────────────────────────
 with st.sidebar:
     st.markdown("""
@@ -59,6 +47,14 @@ with st.sidebar:
         default=["Burkina Faso", "Mali", "Niger"],
         label_visibility="collapsed",
     )
+    with st.expander("Year range", expanded=True):
+        selected_years = st.slider(
+            "Year range",
+            min_value=2020, max_value=2025,
+            value=st.session_state.get("years", (2020, 2025)),
+            label_visibility="visible",
+            key="sidebar_years",
+        )
     selected_event_types = st.multiselect(
         "Event types",
         options=sorted(df["event_type"].unique()),
