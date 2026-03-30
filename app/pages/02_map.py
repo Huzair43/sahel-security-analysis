@@ -1,4 +1,6 @@
 # app/pages/02_map.py
+from utils.style import apply_global_style, page_header
+apply_global_style()
 import streamlit as st
 import folium
 import html
@@ -9,9 +11,11 @@ import pandas as pd
 from utils.data_loader import load_main_data, EVENT_COLORS
 
 st.set_page_config(page_title="Map", page_icon="🗺️", layout="wide")
-st.title("🗺️ Conflict Map")
-st.markdown("Interactive map of conflict incidents across the Sahel.")
-st.markdown("---")
+page_header(
+    title="Conflict Map",
+    subtitle="Interactive visualization of all conflict incidents — filter by country, year and event type.",
+    icon="🗺️"
+)
 
 df = load_main_data()
 

@@ -1,3 +1,5 @@
+from utils.style import apply_global_style, page_header
+apply_global_style()
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
@@ -11,9 +13,11 @@ from utils.data_loader import (
 )
 
 st.set_page_config(page_title="Trends", page_icon="📈", layout="wide")
-st.title("Temporal Trends")
-st.markdown("Evolution of conflict intensity over time across the Sahel.")
-st.markdown("---")
+page_header(
+    title="Temporal Trends",
+    subtitle="Monthly evolution of conflict intensity, anomaly detection, and 6-month forecast.",
+    icon="📈"
+)
 
 monthly        = load_monthly_by_country()
 monthly_type   = load_monthly_by_type()

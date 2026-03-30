@@ -1,13 +1,17 @@
 # app/pages/04_hotspots.py
+from utils.style import apply_global_style, page_header
+apply_global_style()
 import streamlit as st
 import plotly.express as px
 
 from utils.data_loader import load_main_data, EVENT_COLORS, COUNTRY_COLORS
 
 st.set_page_config(page_title="Hotspots", page_icon="🔥", layout="wide")
-st.title("🔥 Conflict Hotspots")
-st.markdown("Most affected regions, locations, and actors across the Sahel.")
-st.markdown("---")
+page_header(
+    title="Conflict Hotspots",
+    subtitle="Most affected regions, locations, and armed groups across the Sahel.",
+    icon="🔥"
+)
 
 df = load_main_data()
 
