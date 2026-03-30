@@ -153,6 +153,15 @@ def apply_global_style():
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
+    @media (max-width: 900px) {
+        header {
+            visibility: visible !important;
+        }
+        #MainMenu {
+            visibility: visible !important;
+        }
+    }
+
     /* ── Page padding ── */
     .block-container {
         padding-top: 2rem;
