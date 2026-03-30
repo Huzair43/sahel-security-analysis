@@ -1,4 +1,3 @@
-# app/app.py
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
@@ -12,7 +11,7 @@ from utils.data_loader import (
 from utils.style import apply_global_style, page_header, stat_card
 
 st.set_page_config(
-    page_title="Sahel Conflict Monitor",
+    page_title="Sahel Security Analysis",
     page_icon="🌍",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -147,7 +146,7 @@ monthly_f = monthly[
 
 # Page header
 page_header(
-    title="Conflict Monitor",
+    title="Security Analysis",
     subtitle="Armed conflict dynamics in the Sahel — Burkina Faso, Mali, Niger",
     icon="🌍"
 )
