@@ -1,9 +1,14 @@
 # app/app.py
 import streamlit as st
+import plotly.express as px
+import plotly.graph_objects as go
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils.data_loader import load_main_data
+from utils.data_loader import (
+    load_main_data, load_monthly_by_country,
+    EVENT_COLORS, COUNTRY_COLORS
+)
 from utils.style import apply_global_style, page_header, stat_card
 
 st.set_page_config(
@@ -15,12 +20,11 @@ st.set_page_config(
 
 apply_global_style()
 
-df = load_main_data()
+df      = load_main_data()
+monthly = load_monthly_by_country()
 
-# ── Sidebar ──────────────────────────────────────────────
+# Sidebar
 with st.sidebar:
-
-    # Header with real flag images
     st.markdown("""
     <div style="padding: 0.5rem 0 1rem 0;">
         <div style="
@@ -41,7 +45,6 @@ with st.sidebar:
     <hr style="border-color:#2d3250; margin: 0 0 1rem 0;">
     """, unsafe_allow_html=True)
 
-    # Real country flags via flagcdn.com
     st.markdown("""
     <div style="margin-bottom: 1rem;">
         <div style="
@@ -73,7 +76,6 @@ with st.sidebar:
     <hr style="border-color:#2d3250; margin: 0 0 1rem 0;">
     """, unsafe_allow_html=True)
 
-    # Data info
     st.markdown("""
     <div style="margin-bottom: 1rem;">
         <div style="
@@ -94,7 +96,6 @@ with st.sidebar:
     <hr style="border-color:#2d3250; margin: 0 0 1rem 0;">
     """, unsafe_allow_html=True)
 
-    # Global filters
     st.markdown("""
     <div style="
         font-size: 0.72rem;
@@ -112,14 +113,12 @@ with st.sidebar:
         default=["Burkina Faso", "Mali", "Niger"],
         label_visibility="collapsed",
     )
-
     selected_years = st.slider(
         "Year range",
         min_value=2020, max_value=2025,
         value=(2020, 2025),
         label_visibility="collapsed",
     )
-
     selected_event_types = st.multiselect(
         "Event types",
         options=sorted(df["event_type"].unique()),
@@ -131,12 +130,8 @@ with st.sidebar:
     st.session_state["years"]       = selected_years
     st.session_state["event_types"] = selected_event_types
 
-# ── Home page ────────────────────────────────────────────
-page_header(
-    title="Conflict Monitor",
-    subtitle="Armed conflict dynamics in the Sahel — Burkina Faso, Mali, Niger",
-    icon="🌍"
-)
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.caption("Built with ACLED data · Streamlit")
 
 # Apply filters
 df_f = df[
@@ -145,28 +140,96 @@ df_f = df[
     (df["event_type"].isin(selected_event_types))
 ]
 
-# ── KPI row ──
-col1, col2, col3, col4 = st.columns(4)
+monthly_f = monthly[
+    (monthly["country"].isin(selected_countries)) &
+    (monthly["year_month_dt"].dt.year.between(*selected_years))
+]
+
+# Page header
+page_header(
+    title="Conflict Monitor",
+    subtitle="Armed conflict dynamics in the Sahel — Burkina Faso, Mali, Niger",
+    icon="🌍"
+)
+
+# KPI row
+st.markdown("### Key Metrics")
+col1, col2, col3, col4, col5 = st.columns(5)
+
+most_affected = (
+    df_f.groupby("country")["event_id_cnty"].count().idxmax()
+    if not df_f.empty else "N/A"
+)
+deadliest_type = (
+    df_f.groupby("event_type")["fatalities"].sum().idxmax()
+    if not df_f.empty else "N/A"
+)
+
 with col1:
-    stat_card("Total Incidents",  f"{len(df_f):,}", color="#e74c3c")
+    stat_card("Total Incidents",  f"{len(df_f):,}",                    color="#e74c3c")
 with col2:
-    stat_card("Total Fatalities", f"{df_f['fatalities'].sum():,}", color="#e67e22")
+    stat_card("Total Fatalities", f"{df_f['fatalities'].sum():,}",      color="#e67e22")
 with col3:
-    most_affected = (
-        df_f.groupby("country")["event_id_cnty"].count().idxmax()
-        if not df_f.empty else "N/A"
-    )
-    stat_card("Most Affected", most_affected, color="#9b59b6")
+    stat_card("Locations",        f"{df_f['location'].nunique():,}",    color="#9b59b6")
 with col4:
-    deadliest_type = (
-        df_f.groupby("event_type")["fatalities"].sum().idxmax()
-        if not df_f.empty else "N/A"
-    )
-    stat_card("Deadliest Type", deadliest_type, color="#3498db")
+    stat_card("Most Affected",    most_affected,                        color="#3498db")
+with col5:
+    stat_card("Deadliest Type",   deadliest_type,                       color="#2ecc71")
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# ── Navigation cards ──
+# Two column layout
+left, right = st.columns(2)
+
+with left:
+    by_country = (
+        df_f.groupby("country")
+        .agg(incidents=("event_id_cnty", "count"), fatalities=("fatalities", "sum"))
+        .reset_index()
+    )
+    fig1 = px.bar(
+        by_country, x="country", y="incidents",
+        color="country",
+        color_discrete_map=COUNTRY_COLORS,
+        title="Incidents by Country",
+        template="plotly_dark",
+        text="incidents",
+        labels={"incidents": "Incidents", "country": "Country"},
+    )
+    fig1.update_traces(textposition="outside")
+    fig1.update_layout(showlegend=False, height=350)
+    st.plotly_chart(fig1, use_container_width=True)
+
+with right:
+    by_type = df_f.groupby("event_type")["event_id_cnty"].count().reset_index()
+    by_type.columns = ["event_type", "incidents"]
+    fig2 = px.pie(
+        by_type, names="event_type", values="incidents",
+        color="event_type",
+        color_discrete_map=EVENT_COLORS,
+        title="Distribution by Event Type",
+        template="plotly_dark",
+        hole=0.4,
+    )
+    fig2.update_layout(height=350)
+    st.plotly_chart(fig2, use_container_width=True)
+
+# Monthly trend
+st.markdown("### Monthly Trend")
+fig3 = px.line(
+    monthly_f,
+    x="year_month_dt", y="incidents",
+    color="country",
+    color_discrete_map=COUNTRY_COLORS,
+    title="Monthly Incidents by Country",
+    labels={"year_month_dt": "Date", "incidents": "Incidents", "country": "Country"},
+    template="plotly_dark",
+)
+fig3.update_layout(hovermode="x unified", height=400)
+st.plotly_chart(fig3, use_container_width=True)
+
+# Navigation cards
+st.markdown("### Explore the Dashboard")
 st.markdown("""
 <div style="
     display: grid;
@@ -174,19 +237,6 @@ st.markdown("""
     gap: 12px;
     margin-top: 0.5rem;
 ">
-    <div style="
-        background: #1a1d2e;
-        border: 1px solid #2d3250;
-        border-radius: 10px;
-        padding: 20px;
-        text-align: center;
-    ">
-        <div style="font-size:1.8rem;">📊</div>
-        <div style="color:#fff;font-weight:600;margin-top:8px;">Overview</div>
-        <div style="color:#606480;font-size:0.78rem;margin-top:4px;">
-            KPIs & statistics
-        </div>
-    </div>
     <div style="
         background: #1a1d2e;
         border: 1px solid #2d3250;
@@ -226,5 +276,25 @@ st.markdown("""
             Most affected zones
         </div>
     </div>
+    <div style="
+        background: #1a1d2e;
+        border: 1px solid #2d3250;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+    ">
+        <div style="font-size:1.8rem;">🔬</div>
+        <div style="color:#fff;font-weight:600;margin-top:8px;">Bayesian</div>
+        <div style="color:#606480;font-size:0.78rem;margin-top:4px;">
+            Probabilistic model
+        </div>
+    </div>
 </div>
 """, unsafe_allow_html=True)
+
+# Raw data
+with st.expander("View raw data sample (50 rows)"):
+    st.dataframe(
+        df_f.sort_values("event_date", ascending=False).head(50),
+        use_container_width=True,
+    )
