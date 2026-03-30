@@ -5,13 +5,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.style import apply_global_style, page_header
 
-st.set_page_config(page_title="About", page_icon="📖", layout="wide")
+from utils.icons import icon
+
+st.set_page_config(page_title="About", page_icon="https://img.icons8.com/ios/50/ffffff/book.png", layout="wide")
 apply_global_style()
 
 page_header(
     title="About this Project",
-    subtitle="Methodology, data sources, findings and limitations",
-    icon="📖"
+    subtitle="Methodology, data sources, findings and limitations."
 )
 
 # ── Section 1: Project overview ───────────────────────────

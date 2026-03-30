@@ -10,11 +10,12 @@ import pandas as pd
 
 from utils.data_loader import load_main_data, EVENT_COLORS
 
-st.set_page_config(page_title="Map", page_icon="🗺️", layout="wide")
+
+
+st.set_page_config(page_title="Map", page_icon="https://img.icons8.com/ios/50/ffffff/map.png", layout="wide")
 page_header(
     title="Conflict Map",
-    subtitle="Interactive visualization of all conflict incidents — filter by country, year and event type.",
-    icon="🗺️"
+    subtitle="Interactive visualization of all conflict incidents."
 )
 
 df = load_main_data()

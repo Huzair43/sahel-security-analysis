@@ -1,109 +1,44 @@
+# app/Overview.py
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 import sys, os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from utils.data_loader import (
     load_main_data, load_monthly_by_country,
     EVENT_COLORS, COUNTRY_COLORS
 )
 from utils.style import apply_global_style, page_header, stat_card
+from utils.icons import icon
 
-st.set_page_config(
-    page_title="Sahel Security Analysis",
-    page_icon="🌍",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+st.set_page_config(page_title="Overview", page_icon="https://img.icons8.com/ios/50/ffffff/shield.png", layout="wide")
 
 apply_global_style()
 
 df      = load_main_data()
 monthly = load_monthly_by_country()
 
-# Sidebar
+# ── Sidebar ───────────────────────────────────────────────
 with st.sidebar:
     st.markdown("""
-    <div style="padding: 0.5rem 0 1rem 0;">
+    <div style="padding: 0.5rem 0 0.3rem 0;">
         <div style="
             font-size: 0.7rem;
             color: #e74c3c;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.12em;
-            margin-bottom: 6px;
-        ">CONFLICT INTELLIGENCE</div>
+            margin-bottom: 4px;
+        ">SECURITY INTELLIGENCE</div>
         <div style="
             font-size: 1.1rem;
             font-weight: 700;
             color: #ffffff;
             letter-spacing: -0.01em;
-        ">Sahel Monitor</div>
+        ">Sahel Security Analysis</div>
     </div>
-    <hr style="border-color:#2d3250; margin: 0 0 1rem 0;">
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style="margin-bottom: 1rem;">
-        <div style="
-            font-size: 0.72rem;
-            color: #606480;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 8px;
-        ">Coverage</div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <img src="https://flagcdn.com/w40/bf.png"
-                     style="width:24px; border-radius:2px; border:1px solid #2d3250;">
-                <span style="color:#e8e8e8; font-size:0.85rem;">Burkina Faso</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <img src="https://flagcdn.com/w40/ml.png"
-                     style="width:24px; border-radius:2px; border:1px solid #2d3250;">
-                <span style="color:#e8e8e8; font-size:0.85rem;">Mali</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <img src="https://flagcdn.com/w40/ne.png"
-                     style="width:24px; border-radius:2px; border:1px solid #2d3250;">
-                <span style="color:#e8e8e8; font-size:0.85rem;">Niger</span>
-            </div>
-        </div>
-    </div>
-    <hr style="border-color:#2d3250; margin: 0 0 1rem 0;">
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style="margin-bottom: 1rem;">
-        <div style="
-            font-size: 0.72rem;
-            color: #606480;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 8px;
-        ">Data</div>
-        <div style="color:#a0a8c0; font-size:0.82rem; line-height:1.6;">
-            Source: <a href="https://acleddata.com" target="_blank"
-                style="color:#e74c3c; text-decoration:none;">ACLED</a><br>
-            Period: Jan 2020 — Mar 2025<br>
-            Updated: Weekly
-        </div>
-    </div>
-    <hr style="border-color:#2d3250; margin: 0 0 1rem 0;">
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style="
-        font-size: 0.72rem;
-        color: #606480;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin-bottom: 8px;
-    ">Global Filters</div>
+    <hr style="border-color:#2d3250; margin: 0.8rem 0 1rem 0;">
     """, unsafe_allow_html=True)
 
     selected_countries = st.multiselect(
@@ -130,9 +65,9 @@ with st.sidebar:
     st.session_state["event_types"] = selected_event_types
 
     st.markdown("<br>", unsafe_allow_html=True)
-    st.caption("Built with ACLED data · Streamlit")
+    st.caption("Sahel Security Analysis · Built with ACLED data")
 
-# Apply filters
+# ── Apply filters ─────────────────────────────────────────
 df_f = df[
     (df["country"].isin(selected_countries)) &
     (df["year"].between(*selected_years)) &
@@ -144,15 +79,15 @@ monthly_f = monthly[
     (monthly["year_month_dt"].dt.year.between(*selected_years))
 ]
 
-# Page header
+# ── Page header ───────────────────────────────────────────
 page_header(
     title="Security Analysis",
-    subtitle="Armed conflict dynamics in the Sahel — Burkina Faso, Mali, Niger",
-    icon="🌍"
+    subtitle="Armed conflict dynamics in the Sahel — Burkina Faso, Mali, Niger"
 )
 
-# KPI row
+# ── KPI row ───────────────────────────────────────────────
 st.markdown("### Key Metrics")
+
 col1, col2, col3, col4, col5 = st.columns(5)
 
 most_affected = (
@@ -165,25 +100,26 @@ deadliest_type = (
 )
 
 with col1:
-    stat_card("Total Incidents",  f"{len(df_f):,}",                    color="#e74c3c")
+    stat_card("Total Incidents",  f"{len(df_f):,}",             color="#e74c3c")
 with col2:
-    stat_card("Total Fatalities", f"{df_f['fatalities'].sum():,}",      color="#e67e22")
+    stat_card("Total Fatalities", f"{df_f['fatalities'].sum():,}", color="#e67e22")
 with col3:
-    stat_card("Locations",        f"{df_f['location'].nunique():,}",    color="#9b59b6")
+    stat_card("Locations",        f"{df_f['location'].nunique():,}", color="#9b59b6")
 with col4:
-    stat_card("Most Affected",    most_affected,                        color="#3498db")
+    stat_card("Most Affected",    most_affected,                 color="#3498db")
 with col5:
-    stat_card("Deadliest Type",   deadliest_type,                       color="#2ecc71")
+    stat_card("Deadliest Type",   deadliest_type,                color="#2ecc71")
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Two column layout
+# ── Charts row ────────────────────────────────────────────
 left, right = st.columns(2)
 
 with left:
     by_country = (
         df_f.groupby("country")
-        .agg(incidents=("event_id_cnty", "count"), fatalities=("fatalities", "sum"))
+        .agg(incidents=("event_id_cnty", "count"),
+             fatalities=("fatalities", "sum"))
         .reset_index()
     )
     fig1 = px.bar(
@@ -200,7 +136,10 @@ with left:
     st.plotly_chart(fig1, use_container_width=True)
 
 with right:
-    by_type = df_f.groupby("event_type")["event_id_cnty"].count().reset_index()
+    by_type = (
+        df_f.groupby("event_type")["event_id_cnty"]
+        .count().reset_index()
+    )
     by_type.columns = ["event_type", "incidents"]
     fig2 = px.pie(
         by_type, names="event_type", values="incidents",
@@ -213,7 +152,7 @@ with right:
     fig2.update_layout(height=350)
     st.plotly_chart(fig2, use_container_width=True)
 
-# Monthly trend
+# ── Monthly trend ─────────────────────────────────────────
 st.markdown("### Monthly Trend")
 fig3 = px.line(
     monthly_f,
@@ -221,77 +160,47 @@ fig3 = px.line(
     color="country",
     color_discrete_map=COUNTRY_COLORS,
     title="Monthly Incidents by Country",
-    labels={"year_month_dt": "Date", "incidents": "Incidents", "country": "Country"},
+    labels={
+        "year_month_dt": "Date",
+        "incidents":     "Incidents",
+        "country":       "Country",
+    },
     template="plotly_dark",
 )
 fig3.update_layout(hovermode="x unified", height=400)
 st.plotly_chart(fig3, use_container_width=True)
 
-# Navigation cards
+# ── Navigation cards ──────────────────────────────────────
 st.markdown("### Explore the Dashboard")
-st.markdown("""
-<div style="
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-top: 0.5rem;
-">
-    <div style="
-        background: #1a1d2e;
-        border: 1px solid #2d3250;
-        border-radius: 10px;
-        padding: 20px;
-        text-align: center;
-    ">
-        <div style="font-size:1.8rem;">🗺️</div>
-        <div style="color:#fff;font-weight:600;margin-top:8px;">Map</div>
-        <div style="color:#606480;font-size:0.78rem;margin-top:4px;">
-            Interactive incident map
-        </div>
-    </div>
-    <div style="
-        background: #1a1d2e;
-        border: 1px solid #2d3250;
-        border-radius: 10px;
-        padding: 20px;
-        text-align: center;
-    ">
-        <div style="font-size:1.8rem;">📈</div>
-        <div style="color:#fff;font-weight:600;margin-top:8px;">Trends</div>
-        <div style="color:#606480;font-size:0.78rem;margin-top:4px;">
-            Temporal analysis
-        </div>
-    </div>
-    <div style="
-        background: #1a1d2e;
-        border: 1px solid #2d3250;
-        border-radius: 10px;
-        padding: 20px;
-        text-align: center;
-    ">
-        <div style="font-size:1.8rem;">🔥</div>
-        <div style="color:#fff;font-weight:600;margin-top:8px;">Hotspots</div>
-        <div style="color:#606480;font-size:0.78rem;margin-top:4px;">
-            Most affected zones
-        </div>
-    </div>
-    <div style="
-        background: #1a1d2e;
-        border: 1px solid #2d3250;
-        border-radius: 10px;
-        padding: 20px;
-        text-align: center;
-    ">
-        <div style="font-size:1.8rem;">🔬</div>
-        <div style="color:#fff;font-weight:600;margin-top:8px;">Bayesian</div>
-        <div style="color:#606480;font-size:0.78rem;margin-top:4px;">
-            Probabilistic model
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
 
-# Raw data
+col1, col2, col3, col4 = st.columns(4)
+
+cards = [
+    ("map",         "Map",      "Interactive incident map"),
+    ("trending-up", "Trends",   "Temporal analysis"),
+    ("target",      "Hotspots", "Most affected zones"),
+    ("activity",    "Bayesian", "Probabilistic model"),
+]
+
+for col, (icon_name, label, desc) in zip([col1, col2, col3, col4], cards):
+    with col:
+        st.markdown(f"""
+        <div style="
+            background: #1a1d2e;
+            border: 1px solid #2d3250;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        ">
+            <div style="display:flex;justify-content:center;margin-bottom:10px;">
+                {icon(icon_name, size=28, color="#e74c3c")}
+            </div>
+            <div style="color:#fff;font-weight:600;font-size:0.95rem;">{label}</div>
+            <div style="color:#606480;font-size:0.78rem;margin-top:4px;">{desc}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# ── Raw data ──────────────────────────────────────────────
 with st.expander("View raw data sample (50 rows)"):
     st.dataframe(
         df_f.sort_values("event_date", ascending=False).head(50),

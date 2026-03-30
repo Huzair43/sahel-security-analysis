@@ -9,13 +9,15 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.data_loader import load_main_data, COUNTRY_COLORS
 from utils.style import apply_global_style, page_header
 
-st.set_page_config(page_title="Bayesian Model", page_icon="🔬", layout="wide")
+from utils.icons import icon
+
+
+st.set_page_config(page_title="Bayesian Model", page_icon="https://img.icons8.com/ios/50/ffffff/activity.png", layout="wide")
 apply_global_style()
 
 page_header(
     title="Bayesian Model",
-    subtitle="Probabilistic analysis of conflict impact on inflation — Sahel 2020–2024",
-    icon="🔬"
+    subtitle="Probabilistic analysis of conflict impact on inflation."
 )
 
 # --- Load data
@@ -208,7 +210,7 @@ with col1:
 
     β = {beta_mean:.3f} with 94% HDI [{hdi_low:.2f}, {hdi_high:.2f}]
 
-    The HDI includes zero — we **cannot conclusively establish**
+    The HDI includes zero, we **cannot conclusively establish**
     a positive or negative causal effect with the available data.
     """)
 
@@ -225,9 +227,9 @@ with col2:
 
     **What this means:**
 
-    P(β > 0) = {prob_pos:.1f}% — conflict *may* increase inflation
+    P(β > 0) = {prob_pos:.1f}%: conflict *may* increase inflation
 
-    P(β < 0) = {prob_neg:.1f}% — conflict *may* decrease inflation
+    P(β < 0) = {prob_neg:.1f}%: conflict *may* decrease inflation
 
     Neither is conclusive. Sub-national monthly data
     would significantly improve the model's power.

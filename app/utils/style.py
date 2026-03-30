@@ -164,10 +164,8 @@ def apply_global_style():
     """, unsafe_allow_html=True)
 
 
-def page_header(title: str, subtitle: str = "", icon: str = ""):
-    """
-    Render a consistent page header across all pages.
-    """
+def page_header(title: str, subtitle: str = "") -> None:
+    """Render a consistent page header across all pages."""
     st.markdown(f"""
     <div style="
         padding: 1.5rem 0 1rem 0;
@@ -181,14 +179,14 @@ def page_header(title: str, subtitle: str = "", icon: str = ""):
             text-transform: uppercase;
             letter-spacing: 0.1em;
             margin-bottom: 0.3rem;
-        ">SAHEL CONFLICT MONITOR</div>
+        ">SAHEL SECURITY ANALYSIS</div>
         <h1 style="
             margin: 0;
             color: #ffffff;
             font-size: 1.8rem;
             font-weight: 700;
             letter-spacing: -0.02em;
-        ">{icon} {title}</h1>
+        ">{title}</h1>
         { f'<p style="margin: 0.4rem 0 0 0; color: #a0a8c0; font-size: 0.9rem;">{subtitle}</p>'
           if subtitle else '' }
     </div>

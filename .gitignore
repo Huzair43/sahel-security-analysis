@@ -57,3 +57,9 @@ dist/
 *.log
 tmp/
 temp/
+
+# Notebook outputs (can be very large with Folium maps)
+notebooks/.ipynb_checkpoints/
+
+# Strip notebook outputs automatically
+.nbstripout

@@ -12,11 +12,13 @@ from utils.data_loader import (
     load_monthly_total, EVENT_COLORS, COUNTRY_COLORS
 )
 
-st.set_page_config(page_title="Trends", page_icon="📈", layout="wide")
+from utils.icons import icon
+
+
+st.set_page_config(page_title="Trends", page_icon="https://img.icons8.com/ios/50/ffffff/graph.png", layout="wide")
 page_header(
     title="Temporal Trends",
-    subtitle="Monthly evolution of conflict intensity, anomaly detection, and 6-month forecast.",
-    icon="📈"
+    subtitle="Monthly evolution of conflict intensity, anomaly detection, and forecast."
 )
 
 monthly        = load_monthly_by_country()

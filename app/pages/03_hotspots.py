@@ -6,11 +6,13 @@ import plotly.express as px
 
 from utils.data_loader import load_main_data, EVENT_COLORS, COUNTRY_COLORS
 
-st.set_page_config(page_title="Hotspots", page_icon="🔥", layout="wide")
+from utils.icons import icon
+
+
+st.set_page_config(page_title="Hotspots", page_icon="https://img.icons8.com/ios/50/ffffff/target.png", layout="wide")
 page_header(
     title="Conflict Hotspots",
-    subtitle="Most affected regions, locations, and armed groups across the Sahel.",
-    icon="🔥"
+    subtitle="Most affected regions, locations, and armed groups."
 )
 
 df = load_main_data()
