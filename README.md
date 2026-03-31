@@ -4,15 +4,6 @@
 
  This project is currently under development.
 
-Planned completion: June 2026
-
-Current progress:
-
-* [x] Project setup
-* [ ] Data collection & cleaning
-* [ ] Exploratory Data Analysis (EDA)
-* [ ] Visualization & mapping
-* [ ] Dashboard deployment
 
 ---
 
@@ -56,35 +47,27 @@ The goal is to combine rigorous time-series modeling with transparent dashboards
 1. Create a virtual environment and install dependencies:
 
    ```bash
-   python -m venv .venv
-   ./.venv/Scripts/activate  # use `./.venv/bin/activate` on macOS/Linux
+   python -m venv .venvS
+   ./.venv/Scripts/activate  # Windows PowerShell
    pip install -r requirements.txt
    ```
 
-2. Configure credentials and overrides:
+2. Configure credentials:
    * Copy `.env.example` to `.env`.
-   * Set `ACLED_USERNAME` and `ACLED_PASSWORD`; optionally override `START_DATE`, `END_DATE`, `COUNTRIES`, `DATA_RAW_PATH`, or `DATA_PROCESSED_PATH` in the same `.env`.
+   * Fill `ACLED_USERNAME` and `ACLED_PASSWORD`.
 
 3. Run the pipeline:
-
    ```bash
    python main.py
    ```
 
-   After the run you will find `data/raw/acled_raw_<date>.csv` plus the latest `data/processed/acled_processed.csv`, `monthly_*`, and `conflict_inflation_joined.csv`.
-
 4. Launch the dashboard (Streamlit):
-
    ```bash
    cd app
    streamlit run app.py
    ```
 
-   The dashboard reads `data/processed/acled_processed.csv` and caches aggregated views via `app/utils/data_loader.py`.
-
-5. Inspect modeling notebooks:
-   * Open `notebooks/03_temporal_analysis.ipynb` to follow the Bayesian VAR scaffolding and credible interval outputs; it now loads secrets from `.env`.
-   * Clean or rerun the other notebooks (`notebooks/01_data_exploration.ipynb`, `notebooks/02_interactive_map.ipynb`) if you want fresher snapshots or smaller output sizes.
+5. For model exploration, open `notebooks/03_temporal_analysis.ipynb` (cleaned to load secrets from `.env`) and inspect the Bayesian VAR scaffolding once it is implemented.
 
 ---  
 
