@@ -173,18 +173,16 @@ fig3.update_layout(hovermode="x unified", height=400)
 st.plotly_chart(fig3, use_container_width=True)
 
 # ── Navigation cards ──────────────────────────────────────
-st.markdown("### Explore the Dashboard")
-
-col1, col2, col3, col4 = st.columns(4)
-
 cards = [
-    ("map",         "Map",      "Interactive incident map"),
-    ("trending-up", "Trends",   "Temporal analysis"),
-    ("target",      "Hotspots", "Most affected zones"),
-    ("activity",    "Bayesian", "Probabilistic model"),
+    ("map",         "Map",      "Interactive incident map",    "pages/01_map.py"),
+    ("trending-up", "Trends",   "Temporal analysis",           "pages/02_trends.py"),
+    ("target",      "Hotspots", "Most affected zones",         "pages/03_hotspots.py"),
+    ("activity",    "Bayesian", "Probabilistic model",         "pages/04_bayesian.py"),
+    ("book",        "About",    "Methodology and findings",    "pages/05_about.py"),
 ]
 
-for col, (icon_name, label, desc) in zip([col1, col2, col3, col4], cards):
+cols = st.columns(5)
+for col, (icon_name, label, desc, page) in zip(cols, cards):
     with col:
         st.markdown(f"""
         <div style="
@@ -201,6 +199,8 @@ for col, (icon_name, label, desc) in zip([col1, col2, col3, col4], cards):
             <div style="color:#606480;font-size:0.78rem;margin-top:4px;">{desc}</div>
         </div>
         """, unsafe_allow_html=True)
+        if st.button(f"Open {label}", key=f"btn_{page}", use_container_width=True):
+            st.switch_page(page)
 
 # ── Raw data ──────────────────────────────────────────────
 with st.expander("View raw data sample (50 rows)"):
