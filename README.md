@@ -132,11 +132,7 @@ This project goes beyond technical analysis. It focuses on a region that is ofte
 
 ## Next Steps
 
-* Data collection and preprocessing
-* Exploratory data analysis (EDA)
-* Feature engineering
-* Visualization development
-* Dashboard implementation and deployment
+* Improve with more data
 
 ---
 
