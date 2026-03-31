@@ -169,8 +169,29 @@ def apply_global_style():
         padding-right: 2.5rem;
         max-width: 1400px;
     }
+    /* Force sidebar toggle button visible on mobile */
+@media (max-width: 768px) {
+    button[kind="header"] {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    [data-testid="collapsedControl"] {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: fixed !important;
+        top: 0.5rem !important;
+        left: 0.5rem !important;
+        z-index: 9999 !important;
+        background-color: #1a1d2e !important;
+        border-radius: 6px !important;
+        padding: 4px !important;
+    }
+}
     </style>
     """, unsafe_allow_html=True)
+    
 
 
 def page_header(title: str, subtitle: str = "") -> None:
