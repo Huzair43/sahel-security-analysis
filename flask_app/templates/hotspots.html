@@ -11,7 +11,7 @@
 
 <!-- ── Top 15 regions ─────────────────────────────────────────────────── -->
 <p class="section-title">Top 15 Most Affected Regions</p>
-<div class="card chart-container">
+<div class="card chart-container card-framed">
     {{ chart_regions | safe }}
 </div>
 
@@ -19,17 +19,17 @@
 <div class="charts-row">
     <div>
         <p class="section-title">Top 10 Locations by Fatalities</p>
-        <div class="card chart-container">{{ chart_locations | safe }}</div>
+        <div class="card chart-container card-framed">{{ chart_locations | safe }}</div>
     </div>
     <div>
         <p class="section-title">Top 10 Most Active Armed Groups</p>
-        <div class="card chart-container">{{ chart_actors | safe }}</div>
+        <div class="card chart-container card-framed">{{ chart_actors | safe }}</div>
     </div>
 </div>
 
 <!-- ── Deadliest incidents table ──────────────────────────────────────── -->
 <p class="section-title" style="margin-top:1.5rem;">Deadliest Incidents (Top 20)</p>
-<div class="card" style="overflow-x:auto;">
+<div class="card card-framed" style="overflow-x:auto;padding:0;">
     <table class="data-table">
         <thead>
             <tr>
@@ -50,13 +50,12 @@
                 <td>{{ row.admin1 }}</td>
                 <td>{{ row.location }}</td>
                 <td>
-                    <span style="padding:2px 8px;border-radius:4px;font-size:0.75rem;
-                                 background:rgba(231,76,60,0.12);color:#e0a0a0;">
-                        {{ row.event_type }}
-                    </span>
+                    <span class="badge-event">{{ row.event_type }}</span>
                 </td>
-                <td style="color:#a0a8c0;font-size:0.8rem;">{{ row.actor1 }}</td>
-                <td style="color:#e74c3c;font-weight:600;">{{ row.fatalities }}</td>
+                <td style="color:var(--text-secondary);font-size:0.8rem;">{{ row.actor1 }}</td>
+                <td style="font-family:var(--font-mono);color:var(--red);font-weight:600;">
+                    {{ row.fatalities }}
+                </td>
             </tr>
             {% endfor %}
         </tbody>

@@ -22,7 +22,7 @@
                     ("Mali",         "#3498db"),
                     ("Niger",        "#2ecc71")
                 ] %}
-                <label class="chip-label" style="--chip-color:{{ color }};">
+                <label class="chip-label" style="--chip-color:{{ color }};--chip-bg:color-mix(in srgb, {{ color }} 18%, transparent);">
                     <input type="checkbox" class="country-cb"
                            value="{{ country }}" checked>
                     <span>{{ country }}</span>
@@ -34,7 +34,7 @@
         <!-- Year range -->
         <div>
             <div class="filter-label">
-                Years: <span id="year-display">2020 – 2025</span>
+                Years: <span id="year-display">2020 : 2025</span>
             </div>
             <div style="display:flex;align-items:center;gap:0.5rem;">
                 <input type="range" id="year-start" min="2020" max="2025"
@@ -66,10 +66,10 @@
 
     </div>
 
-    <div style="margin-top:0.75rem;font-size:0.78rem;color:#606480;">
-        Dataset: <strong style="color:#a0a8c0;">{{ total_incidents }}</strong> incidents
-        &nbsp;·&nbsp;
-        <span id="map-status" style="color:#f1c40f;">Loading data…</span>
+    <div style="margin-top:0.75rem;font-size:0.78rem;color:var(--text-muted);">
+        Dataset: <strong style="color:var(--text-secondary);font-family:var(--font-mono);">{{ total_incidents }}</strong> incidents
+        &nbsp;&middot;&nbsp;
+        <span id="map-status" style="color:var(--amber);">Loading data…</span>
     </div>
 </div>
 
@@ -81,59 +81,6 @@
 {% endblock %}
 
 {% block scripts %}
-<style>
-.filter-label {
-    font-family: var(--font-body);
-    font-size: 0.68rem;
-    color: #a0a8c0;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 6px;
-}
-.chip-label {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 5px 12px; border-radius: 20px;
-    border: 1px solid var(--chip-color, #2d3250);
-    background: rgba(0,0,0,0.2); color: #a0a8c0;
-    font-family: var(--font-body); font-size: 0.8rem;
-    cursor: pointer; transition: background 0.15s, color 0.15s;
-    user-select: none;
-}
-.chip-label input { display: none; }
-.chip-label:has(input:checked) {
-    background: color-mix(in srgb, var(--chip-color) 18%, transparent);
-    color: #ffffff;
-}
-.range-input {
-    -webkit-appearance: none; width: 100px; height: 4px;
-    border-radius: 2px; background: #2d3250; outline: none; cursor: pointer;
-}
-.range-input::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 14px; height: 14px;
-    border-radius: 50%; background: #e74c3c; cursor: pointer;
-}
-.radio-label {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 5px 12px; border-radius: 6px; border: 1px solid #2d3250;
-    background: transparent; color: #a0a8c0;
-    font-family: var(--font-body); font-size: 0.8rem; cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-}
-.radio-label:has(input:checked) {
-    background: rgba(231,76,60,0.15); color: #ffffff; border-color: #e74c3c;
-}
-.radio-label input { display: none; }
-.btn-primary {
-    background: #e74c3c; color: #fff; border: none;
-    border-radius: 6px; padding: 7px 18px;
-    font-family: var(--font-body); font-size: 0.85rem;
-    font-weight: 600; cursor: pointer; transition: background 0.15s, opacity 0.15s;
-}
-.btn-primary:hover:not(:disabled) { background: #c0392b; }
-.btn-primary:disabled { opacity: 0.4; cursor: default; }
-</style>
-
 <script>
 (function () {
     // ── Palette couleurs (miroir Python) ──────────────────────────────────
@@ -173,7 +120,7 @@
     function syncYears() {
         let s = parseInt(yearStart.value), e = parseInt(yearEnd.value);
         if (s > e) { yearStart.value = e; s = e; }
-        yearDisp.textContent = s + ' \u2013 ' + e;
+        yearDisp.textContent = s + ' : ' + e;
     }
     yearStart.addEventListener('input', syncYears);
     yearEnd.addEventListener('input',   syncYears);

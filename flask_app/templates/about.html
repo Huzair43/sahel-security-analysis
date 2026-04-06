@@ -11,7 +11,7 @@
 
 <!-- ── Section 1: Project overview ───────────────────────────────────── -->
 <p class="section-title">What is the Sahel Security Analysis?</p>
-<div class="card" style="color:#a0a8c0;line-height:1.8;font-size:0.88rem;">
+<div class="card card-framed" style="color:var(--text-secondary);line-height:1.8;font-size:0.88rem;">
     <p>
         The Sahel Security Analysis is an open-source data intelligence platform
         that analyzes armed conflict dynamics and their economic consequences
@@ -35,9 +35,9 @@
 <p class="section-title" style="margin-top:1.5rem;">Data Sources</p>
 <div class="charts-row">
 
-    <div class="card" style="color:#a0a8c0;line-height:1.8;font-size:0.88rem;">
-        <p style="color:#fff;font-weight:600;margin-bottom:0.5rem;">
-            ACLED: Armed Conflict Location and Event Data
+    <div class="card card-framed" style="color:var(--text-secondary);line-height:1.8;font-size:0.88rem;">
+        <p style="color:var(--text-primary);font-weight:600;margin-bottom:0.5rem;">
+            ACLED, Armed Conflict Location and Event Data
         </p>
         <p>
             ACLED is the primary data source for conflict events. It is a
@@ -54,14 +54,14 @@
             administrative region, event type, actors involved, number of
             fatalities, and a detailed narrative note.
         </p>
-        <p style="margin-top:0.6rem;color:#606480;">
+        <p style="margin-top:0.6rem;color:var(--text-muted);">
             Access level: Research (12-month data lag applies).
         </p>
     </div>
 
-    <div class="card" style="color:#a0a8c0;line-height:1.8;font-size:0.88rem;">
-        <p style="color:#fff;font-weight:600;margin-bottom:0.5rem;">
-            IMF World Economic Outlook: Inflation Data
+    <div class="card card-framed" style="color:var(--text-secondary);line-height:1.8;font-size:0.88rem;">
+        <p style="color:var(--text-primary);font-weight:600;margin-bottom:0.5rem;">
+            IMF World Economic Outlook, Inflation Data
         </p>
         <p>
             For economic indicators, we use the IMF DataMapper API, which
@@ -94,15 +94,15 @@
 </div>
 
 <div class="card tab-panel active" id="tab-conflict"
-     style="color:#a0a8c0;line-height:1.8;font-size:0.88rem;">
-    <p style="color:#fff;font-weight:600;">Temporal Analysis</p>
+     style="color:var(--text-secondary);line-height:1.8;font-size:0.88rem;">
+    <p style="color:var(--text-primary);font-weight:600;">Temporal Analysis</p>
     <p>
         Conflict events are aggregated at the monthly level per country
         to produce time series of incident counts and fatality totals.
         We apply a 3-month rolling average to smooth short-term volatility
         and reveal the underlying trend.
     </p>
-    <p style="color:#fff;font-weight:600;margin-top:1rem;">Anomaly Detection</p>
+    <p style="color:var(--text-primary);font-weight:600;margin-top:1rem;">Anomaly Detection</p>
     <p>
         We use Z-score normalization to identify months with abnormally
         high conflict activity. A month is flagged as anomalous when its
@@ -112,13 +112,13 @@
         such as the coups in Burkina Faso (January and September 2022)
         and the Niger coup of July 2023.
     </p>
-    <p style="color:#fff;font-weight:600;margin-top:1rem;">Trend Forecasting</p>
+    <p style="color:var(--text-primary);font-weight:600;margin-top:1rem;">Trend Forecasting</p>
     <p>
         We fit a linear regression on the monthly incident time series
         to estimate the overall conflict trajectory. The model produces
         a 6-month forward projection based on the historical trend.
     </p>
-    <p style="color:#fff;font-weight:600;margin-top:1rem;">Cross-country Correlation</p>
+    <p style="color:var(--text-primary);font-weight:600;margin-top:1rem;">Cross-country Correlation</p>
     <p>
         We compute Pearson correlation coefficients between the monthly
         incident series of the three countries to test whether conflict
@@ -129,8 +129,8 @@
 </div>
 
 <div class="card tab-panel" id="tab-economic"
-     style="color:#a0a8c0;line-height:1.8;font-size:0.88rem;">
-    <p style="color:#fff;font-weight:600;">Source Selection Process</p>
+     style="color:var(--text-secondary);line-height:1.8;font-size:0.88rem;">
+    <p style="color:var(--text-primary);font-weight:600;">Source Selection Process</p>
     <p>
         The selection of economic data involved several iterations.
         Our first attempt used the WFP Global Food Prices dataset via
@@ -147,7 +147,7 @@
         The IMF DataMapper API was ultimately selected as it provides
         independent, reliable, annual inflation data covering our full study period.
     </p>
-    <p style="color:#fff;font-weight:600;margin-top:1rem;">Conflict-Inflation Join</p>
+    <p style="color:var(--text-primary);font-weight:600;margin-top:1rem;">Conflict-Inflation Join</p>
     <p>
         We aggregate ACLED data at the country-year level and join it
         with IMF inflation data on the country and year keys. We build
@@ -155,7 +155,7 @@
         the same year) and a lagged join (conflict at year T predicts
         inflation at year T+1).
     </p>
-    <p style="color:#fff;font-weight:600;margin-top:1rem;">Correlation Results</p>
+    <p style="color:var(--text-primary);font-weight:600;margin-top:1rem;">Correlation Results</p>
     <p>
         The Pearson correlation analysis found no statistically significant
         linear relationship between conflict intensity and national inflation
@@ -167,8 +167,8 @@
 </div>
 
 <div class="card tab-panel" id="tab-bayesian"
-     style="color:#a0a8c0;line-height:1.8;font-size:0.88rem;">
-    <p style="color:#fff;font-weight:600;">Why Bayesian Statistics?</p>
+     style="color:var(--text-secondary);line-height:1.8;font-size:0.88rem;">
+    <p style="color:var(--text-primary);font-weight:600;">Why Bayesian Statistics?</p>
     <p>
         With only 12 country-year observations after applying the lag,
         frequentist inference has very low statistical power. A p-value
@@ -177,7 +177,7 @@
         The Bayesian approach addresses this by quantifying uncertainty
         explicitly through posterior distributions.
     </p>
-    <p style="color:#fff;font-weight:600;margin-top:1rem;">Model Specification</p>
+    <p style="color:var(--text-primary);font-weight:600;margin-top:1rem;">Model Specification</p>
     <p>
         We fit two models. The simple model uses a single global intercept:
         inflation(t) = α + β × conflict_z(t-1) + ε.
@@ -185,14 +185,14 @@
         inflation intercept while sharing the conflict effect β across
         all three countries.
     </p>
-    <p style="color:#fff;font-weight:600;margin-top:1rem;">Sampling Configuration</p>
+    <p style="color:var(--text-primary);font-weight:600;margin-top:1rem;">Sampling Configuration</p>
     <p>
         Both models were fit using MCMC with the NUTS sampler via PyMC v5.
         We ran 4 chains with 4,000 draws and 2,000 tuning steps each,
         for a total of 16,000 posterior samples. All R-hat values
         converged to 1.0, confirming reliable inference.
     </p>
-    <p style="color:#fff;font-weight:600;margin-top:1rem;">Results</p>
+    <p style="color:var(--text-primary);font-weight:600;margin-top:1rem;">Results</p>
     <p>
         The posterior mean of β is -0.416 with a 94% Highest Density
         Interval of [-2.302, +1.399]. The HDI includes zero, meaning
@@ -202,25 +202,25 @@
 </div>
 
 <div class="card tab-panel" id="tab-pipeline"
-     style="color:#a0a8c0;line-height:1.8;font-size:0.88rem;">
-    <p style="color:#fff;font-weight:600;">Architecture</p>
+     style="color:var(--text-secondary);line-height:1.8;font-size:0.88rem;">
+    <p style="color:var(--text-primary);font-weight:600;">Architecture</p>
     <p>
         The project follows a modular pipeline architecture with clear
         separation between data collection, processing, analysis, and
         visualization layers.
-        The data pipeline (<code style="color:#f1c40f;">src/acled_pipeline.py</code>)
+        The data pipeline (<code>src/acled_pipeline.py</code>)
         authenticates with the ACLED API using OAuth2, fetches data for each
         country separately using pagination, cleans and enriches the raw data,
         and saves both a timestamped raw snapshot and a processed file.
     </p>
-    <p style="color:#fff;font-weight:600;margin-top:1rem;">Technology Stack</p>
+    <p style="color:var(--text-primary);font-weight:600;margin-top:1rem;">Technology Stack</p>
     <p>
         The project is built entirely in Python. Data processing uses
-        Pandas and NumPy. Geospatial visualization uses Folium.
+        Pandas and NumPy. Geospatial visualization uses Plotly with WebGL.
         Time series visualization uses Plotly. The Bayesian model uses
         PyMC v5 with ArviZ for diagnostics. The web application is built with Flask.
     </p>
-    <p style="color:#fff;font-weight:600;margin-top:1rem;">Update Frequency</p>
+    <p style="color:var(--text-primary);font-weight:600;margin-top:1rem;">Update Frequency</p>
     <p>
         ACLED publishes new conflict data weekly. The pipeline can be
         re-run at any time to fetch the latest events. At the Research
@@ -231,10 +231,10 @@
 
 <!-- ── Section 4: Key findings ───────────────────────────────────────── -->
 <p class="section-title" style="margin-top:1.5rem;">Key Findings</p>
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+<div class="cards-row stagger" style="grid-template-columns:repeat(3,1fr);">
 
-    <div class="card" style="color:#a0a8c0;line-height:1.8;font-size:0.88rem;">
-        <p style="color:#fff;font-weight:600;margin-bottom:0.5rem;">Conflict Escalation</p>
+    <div class="card card-framed" style="color:var(--text-secondary);line-height:1.8;font-size:0.88rem;">
+        <p style="color:var(--text-primary);font-weight:600;margin-bottom:0.5rem;">Conflict Escalation</p>
         <p>
             The Sahel experienced a sharp escalation in conflict intensity
             between 2020 and 2022, peaking at 5,649 incidents in 2022.
@@ -250,8 +250,8 @@
         </p>
     </div>
 
-    <div class="card" style="color:#a0a8c0;line-height:1.8;font-size:0.88rem;">
-        <p style="color:#fff;font-weight:600;margin-bottom:0.5rem;">Regional Synchronization</p>
+    <div class="card card-framed" style="color:var(--text-secondary);line-height:1.8;font-size:0.88rem;">
+        <p style="color:var(--text-primary);font-weight:600;margin-bottom:0.5rem;">Regional Synchronization</p>
         <p>
             The cross-country correlation analysis reveals that conflict
             dynamics in Burkina Faso, Mali, and Niger are moderately
@@ -267,8 +267,8 @@
         </p>
     </div>
 
-    <div class="card" style="color:#a0a8c0;line-height:1.8;font-size:0.88rem;">
-        <p style="color:#fff;font-weight:600;margin-bottom:0.5rem;">Economic Impact</p>
+    <div class="card card-framed" style="color:var(--text-secondary);line-height:1.8;font-size:0.88rem;">
+        <p style="color:var(--text-primary);font-weight:600;margin-bottom:0.5rem;">Economic Impact</p>
         <p>
             The Bayesian analysis found no statistically credible linear
             relationship between conflict intensity and national inflation
@@ -290,8 +290,8 @@
 <p class="section-title" style="margin-top:1.5rem;">Limitations and Future Work</p>
 <div class="charts-row">
 
-    <div class="card" style="color:#a0a8c0;line-height:1.8;font-size:0.88rem;">
-        <p style="color:#fff;font-weight:600;margin-bottom:0.5rem;">Current Limitations</p>
+    <div class="card card-framed" style="color:var(--text-secondary);line-height:1.8;font-size:0.88rem;">
+        <p style="color:var(--text-primary);font-weight:600;margin-bottom:0.5rem;">Current Limitations</p>
         <p>
             The most significant limitation is the aggregation mismatch
             between conflict data (sub-national, weekly) and economic data
@@ -311,8 +311,8 @@
         </p>
     </div>
 
-    <div class="card" style="color:#a0a8c0;line-height:1.8;font-size:0.88rem;">
-        <p style="color:#fff;font-weight:600;margin-bottom:0.5rem;">Planned Improvements</p>
+    <div class="card card-framed" style="color:var(--text-secondary);line-height:1.8;font-size:0.88rem;">
+        <p style="color:var(--text-primary);font-weight:600;margin-bottom:0.5rem;">Planned Improvements</p>
         <p>
             The primary constraint for sub-national economic analysis is
             data availability. While the FAO FPMA tool and WFP VAM platform
@@ -333,64 +333,30 @@
 
 <!-- ── Section 6: Citation ────────────────────────────────────────────── -->
 <p class="section-title" style="margin-top:1.5rem;">Citation and Attribution</p>
-<div class="card" style="color:#a0a8c0;line-height:1.8;font-size:0.85rem;">
+<div class="card" style="color:var(--text-secondary);line-height:1.8;font-size:0.85rem;">
     <p>
         If you use this platform or its analysis in your work, please cite
         the underlying data sources.
     </p>
-    <p style="margin-top:0.8rem;padding:0.75rem;background:#0f1117;
-               border:1px solid #2d3250;border-radius:6px;color:#e8e8e8;">
+    <p style="margin-top:0.8rem;padding:0.75rem;background:var(--surface-1);
+               border:1px solid var(--border-subtle);border-radius:8px;color:var(--text-primary);">
         ACLED (Armed Conflict Location and Event Data Project). Raleigh, C.,
         Linke, A., Hegre, H. and Karlsen, J. 2010. Introducing ACLED: Armed
         Conflict Location and Event Data. Journal of Peace Research 47(5).
     </p>
-    <p style="margin-top:0.6rem;padding:0.75rem;background:#0f1117;
-               border:1px solid #2d3250;border-radius:6px;color:#e8e8e8;">
+    <p style="margin-top:0.6rem;padding:0.75rem;background:var(--surface-1);
+               border:1px solid var(--border-subtle);border-radius:8px;color:var(--text-primary);">
         International Monetary Fund. World Economic Outlook Database.
         Washington DC: IMF, 2024.
     </p>
-    <p style="margin-top:1rem;color:#606480;font-size:0.78rem;">
-        Sahel Security Analysis, built with ACLED and IMF data, Flask.
+    <p style="margin-top:1rem;color:var(--text-muted);font-size:0.78rem;">
+        Sahel Security Analysis, built with ACLED and IMF data.
     </p>
 </div>
 
 {% endblock %}
 
 {% block scripts %}
-<style>
-.tabs {
-    display: flex;
-    gap: 4px;
-    background: #1a1d2e;
-    border-radius: 8px;
-    padding: 4px;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-}
-.tab-btn {
-    background: transparent;
-    border: none;
-    border-radius: 6px;
-    color: #a0a8c0;
-    font-family: var(--font-body);
-    font-size: 0.85rem;
-    font-weight: 500;
-    padding: 7px 18px;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-}
-.tab-btn:hover { color: #ffffff; background: rgba(255,255,255,0.05); }
-.tab-btn.active { background: #e74c3c; color: #ffffff; }
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
-
-@media (max-width: 900px) {
-    div[style*="grid-template-columns:repeat(3,1fr)"] {
-        grid-template-columns: 1fr !important;
-    }
-}
-</style>
-
 <script>
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
