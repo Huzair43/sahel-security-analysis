@@ -12,3 +12,5 @@ streamlit-folium>=0.20
 # Flask (nouvelle app)
 flask>=3.0
 flask-compress>=1.14
+gunicorn>=21.2
+python-dotenv>=1.0
