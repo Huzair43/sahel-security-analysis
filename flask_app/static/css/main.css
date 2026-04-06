@@ -1026,10 +1026,14 @@ body::after {
     transform: translateX(-110%);
     transition: transform 0.32s var(--ease-out);
     box-shadow: 4px 0 32px rgba(0,0,0,0.5);
+    pointer-events: none;
+    visibility: hidden;
 }
 
 .chat-drawer.open {
     transform: translateX(0);
+    pointer-events: auto;
+    visibility: visible;
 }
 
 /* ── Header ────────────────────────────────────────────────────────────── */
@@ -1347,11 +1351,15 @@ hr {
 
     .page-header h1 { font-size: 1.7rem; }
 
-    /* Chat drawer: full width on mobile */
+    /* Chat drawer: full width on mobile, below sidebar */
     .chat-drawer {
         left: 0;
         width: 100vw;
-        z-index: 150;
+        z-index: 95;
+    }
+
+    .sidebar {
+        z-index: 160;
     }
 }
 
