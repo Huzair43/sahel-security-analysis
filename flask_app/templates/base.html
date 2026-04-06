@@ -112,7 +112,7 @@
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
                 AI Chat
-                <span class="chat-trigger-badge">Gemma</span>
+                <span class="chat-trigger-badge">beta</span>
             </button>
 
         </nav>
@@ -281,7 +281,7 @@ async function fetchStatus() {
         const data = await r.json();
         const label = document.getElementById('chat-model-label');
         if (data.available) {
-            const backend = data.backend === 'local' ? 'Gemma via Ollama' : 'Gemma via Groq';
+            const backend = data.backend === 'local' ? 'Gemma via Ollama' : data.model + ' via Groq';
             label.textContent = backend;
             label.style.color = 'var(--teal)';
         } else {
