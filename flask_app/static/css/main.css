@@ -102,8 +102,6 @@ body::after {
 .layout {
     display: flex;
     min-height: 100vh;
-    position: relative;
-    z-index: 1;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -1351,15 +1349,10 @@ hr {
 
     .page-header h1 { font-size: 1.7rem; }
 
-    /* Chat drawer: full width on mobile, below sidebar */
+    /* Chat drawer: full width on mobile */
     .chat-drawer {
         left: 0;
         width: 100vw;
-        z-index: 95;
-    }
-
-    .sidebar {
-        z-index: 160;
     }
 }
 
