@@ -1,14 +1,11 @@
 """
 API Blueprint — endpoints de données pour les graphiques interactifs.
-Ces endpoints retournent du JSON consommé par Plotly.js côté client,
-ou du HTML Folium pour la carte.
+Ces endpoints retournent du JSON consommé par Plotly.js côté client.
 """
-import html as html_lib
-
-import folium
 import pandas as pd
-from flask import Blueprint, Response, jsonify, request
-from folium.plugins import HeatMap, MarkerCluster
+import plotly.express as px
+import plotly.graph_objects as go
+from flask import Blueprint, jsonify, request
 
 from flask_app.utils.data_loader import (
     EVENT_COLORS,
@@ -57,113 +54,135 @@ def monthly_total():
     return jsonify(df.drop(columns=["year_month_dt"]).to_dict(orient="records"))
 
 
-# ── Carte Folium ──────────────────────────────────────────────────────────────
+# ── Données carte (JSON compact, chargé une seule fois) ──────────────────────
 
-def _safe(value) -> str:
-    if value is None:
-        return ""
-    return html_lib.escape(str(value))
-
-
-def _build_incident_map(df: pd.DataFrame) -> folium.Map:
-    m = folium.Map(location=[15.0, -2.0], zoom_start=6, tiles="CartoDB dark_matter")
-    cluster = MarkerCluster(
-        options={"maxClusterRadius": 50, "disableClusteringAtZoom": 9}
-    ).add_to(m)
-
-    df = df.copy()
-    df["color"]  = df["event_type"].map(EVENT_COLORS).fillna("#95a5a6")
-    df["radius"] = (df["fatalities"] * 0.5 + 4).clip(4, 20)
-
-    for row in df.itertuples():
-        popup_html = (
-            f"<div style='font-family:Arial;font-size:12px;width:200px;'>"
-            f"<b style='color:{row.color};'>{_safe(row.event_type)}</b><br>"
-            f"<hr style='margin:3px 0;'>"
-            f"<b>Date:</b> {_safe(str(row.event_date)[:10])}<br>"
-            f"<b>Location:</b> {_safe(row.location)}, {_safe(row.admin1)}<br>"
-            f"<b>Country:</b> {_safe(row.country)}<br>"
-            f"<b>Fatalities:</b> {row.fatalities}<br>"
-            f"<b>Actor:</b> {_safe(row.actor1)}"
-            f"</div>"
-        )
-        folium.CircleMarker(
-            location=[row.latitude, row.longitude],
-            radius=row.radius,
-            color=row.color,
-            fill=True,
-            fill_opacity=0.7,
-            popup=folium.Popup(popup_html, max_width=230),
-            tooltip=f"{_safe(row.event_type)} — {row.fatalities} fatalities",
-        ).add_to(cluster)
-
-    legend_html = """
-    <div style="position:fixed;bottom:40px;left:40px;
-        background:rgba(0,0,0,0.75);color:white;
-        padding:12px 16px;border-radius:8px;font-size:13px;z-index:1000;">
-        <b>Event Types</b><br><br>
-        <span style="color:#e74c3c;">●</span> Battles<br>
-        <span style="color:#e67e22;">●</span> Violence against civilians<br>
-        <span style="color:#9b59b6;">●</span> Explosions / Remote violence<br>
-        <span style="color:#3498db;">●</span> Protests<br>
-        <span style="color:#f1c40f;">●</span> Riots<br>
-        <span style="color:#2ecc71;">●</span> Strategic developments<br>
-        <br><i style="font-size:11px;">Circle size = fatalities</i>
-    </div>
+@data_bp.route("/data/map-points")
+def map_points():
     """
-    m.get_root().html.add_child(folium.Element(legend_html))
-    return m
+    Retourne tous les incidents en JSON compact.
+    Chargé une seule fois, filtré et rendu entièrement côté client.
+    Noms de colonnes courts + coordonnées arrondies pour réduire la taille.
+    """
+    df = load_main_data()
+    out = pd.DataFrame({
+        "la": df["latitude"].round(4),
+        "lo": df["longitude"].round(4),
+        "et": df["event_type"],
+        "fa": df["fatalities"].astype(int),
+        "yr": df["year"].astype(int),
+        "dt": df["event_date"].astype(str).str[:10],
+        "co": df["country"],
+        "r":  df["admin1"],
+        "lc": df["location"],
+        "ac": df["actor1"],
+    })
+    return jsonify(out.to_dict(orient="records"))
 
 
-def _build_heatmap(df: pd.DataFrame) -> folium.Map:
-    m = folium.Map(location=[15.0, -2.0], zoom_start=6, tiles="CartoDB dark_matter")
-    heat_data = df[["latitude", "longitude", "fatalities"]].copy()
-    heat_data["fatalities"] = heat_data["fatalities"].clip(lower=1)
-    HeatMap(
-        heat_data.values.tolist(),
-        min_opacity=0.3,
-        radius=15,
-        blur=10,
-        gradient={"0.2": "blue", "0.4": "lime", "0.6": "orange", "1.0": "red"},
-    ).add_to(m)
-    return m
+# ── Carte Plotly (WebGL, supporte 23 000+ points sans lag) ───────────────────
+
+_PLOTLY_OPTS = dict(full_html=False, include_plotlyjs=False, config={"responsive": True})
 
 
-@data_bp.route("/map/html")
-def map_html():
-    """Retourne le HTML complet de la carte Folium — chargé dans un <iframe>."""
+def _build_scatter_map(df: pd.DataFrame) -> str:
+    df = df.copy()
+    df["size"]       = (df["fatalities"] * 0.4 + 5).clip(5, 22)
+    df["date_str"]   = df["event_date"].astype(str).str[:10]
+    df["fatalities"] = df["fatalities"].astype(int)
+
+    fig = px.scatter_mapbox(
+        df,
+        lat="latitude", lon="longitude",
+        color="event_type",
+        color_discrete_map=EVENT_COLORS,
+        size="size",
+        size_max=22,
+        hover_name="event_type",
+        hover_data={
+            "date_str":   True,
+            "country":    True,
+            "admin1":     True,
+            "location":   True,
+            "actor1":     True,
+            "fatalities": True,
+            "size":       False,
+            "latitude":   False,
+            "longitude":  False,
+        },
+        labels={
+            "date_str":   "Date",
+            "admin1":     "Region",
+            "actor1":     "Actor",
+            "fatalities": "Fatalities",
+        },
+        mapbox_style="carto-darkmatter",
+        center={"lat": 15.0, "lon": -2.0},
+        zoom=5,
+        opacity=0.75,
+        template="plotly_dark",
+    )
+    fig.update_layout(
+        height=580,
+        margin={"r": 0, "t": 0, "l": 0, "b": 0},
+        paper_bgcolor="rgba(0,0,0,0)",
+        legend=dict(
+            bgcolor="rgba(15,17,23,0.85)",
+            bordercolor="#2d3250",
+            borderwidth=1,
+            font=dict(color="#e8e8e8", size=12),
+            title=dict(text="Event Type", font=dict(color="#a0a8c0", size=11)),
+        ),
+    )
+    return fig.to_html(**_PLOTLY_OPTS)
+
+
+def _build_density_map(df: pd.DataFrame) -> str:
+    df = df.copy()
+    df["weight"] = (df["fatalities"].clip(lower=1))
+
+    fig = px.density_mapbox(
+        df,
+        lat="latitude", lon="longitude",
+        z="weight",
+        radius=14,
+        mapbox_style="carto-darkmatter",
+        center={"lat": 15.0, "lon": -2.0},
+        zoom=5,
+        color_continuous_scale=["#0d1b2a", "#1565c0", "#00e676", "#ff9800", "#e74c3c"],
+        template="plotly_dark",
+    )
+    fig.update_layout(
+        height=580,
+        margin={"r": 0, "t": 0, "l": 0, "b": 0},
+        paper_bgcolor="rgba(0,0,0,0)",
+        coloraxis_colorbar=dict(
+            title=dict(text="Intensity", font=dict(color="#a0a8c0")),
+            tickfont=dict(color="#a0a8c0"),
+        ),
+    )
+    return fig.to_html(**_PLOTLY_OPTS)
+
+
+@data_bp.route("/map/chart")
+def map_chart():
+    """Retourne le HTML Plotly de la carte, injecté directement dans la page."""
     df = load_main_data().copy()
 
-    # ── Filtres depuis query params ───────────────────────────────────────────
     countries  = request.args.getlist("countries") or ["Burkina Faso", "Mali", "Niger"]
     year_start = int(request.args.get("year_start", 2020))
     year_end   = int(request.args.get("year_end",   2025))
     map_type   = request.args.get("map_type", "incidents")
-    max_points = request.args.get("max_points", "2000")
 
     df_f = df[
         df["country"].isin(countries) &
         df["year"].between(year_start, year_end)
     ].copy()
 
-    # ── Limite de points ──────────────────────────────────────────────────────
-    if max_points != "all" and not df_f.empty:
-        limit = int(max_points)
-        if len(df_f) > limit:
-            df_deadly = df_f[df_f["fatalities"] > 0].nlargest(limit // 2, "fatalities")
-            df_sample = df_f[df_f["fatalities"] == 0].sample(
-                min(limit // 2, len(df_f[df_f["fatalities"] == 0])), random_state=42
-            )
-            df_f = pd.concat([df_deadly, df_sample]).drop_duplicates()
-
     if df_f.empty:
-        return Response(
-            "<html><body style='background:#0f1117;color:#a0a8c0;"
-            "font-family:Inter,sans-serif;display:flex;align-items:center;"
-            "justify-content:center;height:100vh;margin:0;'>"
-            "<p>No data for the selected filters.</p></body></html>",
-            mimetype="text/html",
-        )
+        return "<p style='color:#a0a8c0;padding:2rem;'>No data for the selected filters.</p>"
 
-    m = _build_incident_map(df_f) if map_type == "incidents" else _build_heatmap(df_f)
-    return Response(m.get_root().render(), mimetype="text/html")
+    chart_html = (
+        _build_scatter_map(df_f) if map_type == "incidents"
+        else _build_density_map(df_f)
+    )
+    return chart_html

@@ -3,7 +3,6 @@
 
 {% block content %}
 
-<!-- ── Page header ─────────────────────────────────────────────────────── -->
 <div class="page-header">
     <div class="eyebrow">Sahel Security Analysis</div>
     <h1>Conflict Map</h1>
@@ -40,7 +39,7 @@
             <div style="display:flex;align-items:center;gap:0.5rem;">
                 <input type="range" id="year-start" min="2020" max="2025"
                        value="2020" class="range-input">
-                <input type="range" id="year-end"   min="2020" max="2025"
+                <input type="range" id="year-end" min="2020" max="2025"
                        value="2025" class="range-input">
             </div>
         </div>
@@ -50,208 +49,240 @@
             <div class="filter-label">Map type</div>
             <div style="display:flex;gap:0.4rem;">
                 <label class="radio-label">
-                    <input type="radio" name="map-type"
-                           value="incidents" checked> Incidents
+                    <input type="radio" name="map-type" value="incidents" checked>
+                    Incidents
                 </label>
                 <label class="radio-label">
-                    <input type="radio" name="map-type"
-                           value="heatmap"> Heatmap
+                    <input type="radio" name="map-type" value="heatmap">
+                    Heatmap
                 </label>
             </div>
         </div>
 
-        <!-- Max points -->
+        <!-- Apply -->
         <div>
-            <div class="filter-label">Max points</div>
-            <select id="max-points" class="select-input">
-                <option value="1000">1 000</option>
-                <option value="2000" selected>2 000</option>
-                <option value="5000">5 000</option>
-                <option value="10000">10 000</option>
-                <option value="all">All</option>
-            </select>
-        </div>
-
-        <!-- Apply button -->
-        <div>
-            <button id="apply-btn" class="btn-primary">Apply filters</button>
+            <button id="apply-btn" class="btn-primary" disabled>Apply filters</button>
         </div>
 
     </div>
 
-    <!-- Caption -->
     <div style="margin-top:0.75rem;font-size:0.78rem;color:#606480;">
-        Dataset: <strong style="color:#a0a8c0;">{{ total_incidents }}</strong> incidents total
+        Dataset: <strong style="color:#a0a8c0;">{{ total_incidents }}</strong> incidents
         &nbsp;·&nbsp;
-        <span id="map-status" style="color:#2ecc71;">Ready</span>
+        <span id="map-status" style="color:#f1c40f;">Loading data…</span>
     </div>
 </div>
 
-<!-- ── Map iframe ──────────────────────────────────────────────────────── -->
+<!-- ── Map ────────────────────────────────────────────────────────────── -->
 <div class="card" style="padding:0;overflow:hidden;border-radius:10px;">
-    <iframe id="map-frame"
-            src="/api/map/html?countries=Burkina+Faso&countries=Mali&countries=Niger&year_start=2020&year_end=2025&map_type=incidents&max_points=2000"
-            style="width:100%;height:580px;border:none;display:block;"
-            title="Conflict Map">
-    </iframe>
+    <div id="map-div" style="height:580px;"></div>
 </div>
 
 {% endblock %}
 
 {% block scripts %}
 <style>
-/* ── Filter bar styles ───────────────────────────────────────────────── */
 .filter-label {
-    font-size: 0.72rem;
+    font-family: var(--font-body);
+    font-size: 0.68rem;
     color: #a0a8c0;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     margin-bottom: 6px;
 }
-
 .chip-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    border-radius: 20px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 20px;
     border: 1px solid var(--chip-color, #2d3250);
-    background: rgba(0,0,0,0.2);
-    color: #a0a8c0;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+    background: rgba(0,0,0,0.2); color: #a0a8c0;
+    font-family: var(--font-body); font-size: 0.8rem;
+    cursor: pointer; transition: background 0.15s, color 0.15s;
     user-select: none;
 }
-
 .chip-label input { display: none; }
-
 .chip-label:has(input:checked) {
     background: color-mix(in srgb, var(--chip-color) 18%, transparent);
     color: #ffffff;
 }
-
 .range-input {
-    -webkit-appearance: none;
-    width: 100px;
-    height: 4px;
-    border-radius: 2px;
-    background: #2d3250;
-    outline: none;
-    cursor: pointer;
+    -webkit-appearance: none; width: 100px; height: 4px;
+    border-radius: 2px; background: #2d3250; outline: none; cursor: pointer;
 }
 .range-input::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    background: #e74c3c;
-    cursor: pointer;
+    -webkit-appearance: none; width: 14px; height: 14px;
+    border-radius: 50%; background: #e74c3c; cursor: pointer;
 }
-
 .radio-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 12px;
-    border-radius: 6px;
-    border: 1px solid #2d3250;
-    background: transparent;
-    color: #a0a8c0;
-    font-size: 0.8rem;
-    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; border-radius: 6px; border: 1px solid #2d3250;
+    background: transparent; color: #a0a8c0;
+    font-family: var(--font-body); font-size: 0.8rem; cursor: pointer;
     transition: background 0.15s, color 0.15s;
 }
 .radio-label:has(input:checked) {
-    background: rgba(231,76,60,0.15);
-    color: #ffffff;
-    border-color: #e74c3c;
+    background: rgba(231,76,60,0.15); color: #ffffff; border-color: #e74c3c;
 }
 .radio-label input { display: none; }
-
-.select-input {
-    background: #1a1d2e;
-    border: 1px solid #2d3250;
-    border-radius: 6px;
-    color: #e8e8e8;
-    padding: 5px 10px;
-    font-size: 0.82rem;
-    cursor: pointer;
-    outline: none;
-}
-
 .btn-primary {
-    background: #e74c3c;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 7px 18px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s;
-    font-family: inherit;
+    background: #e74c3c; color: #fff; border: none;
+    border-radius: 6px; padding: 7px 18px;
+    font-family: var(--font-body); font-size: 0.85rem;
+    font-weight: 600; cursor: pointer; transition: background 0.15s, opacity 0.15s;
 }
-.btn-primary:hover { background: #c0392b; }
+.btn-primary:hover:not(:disabled) { background: #c0392b; }
+.btn-primary:disabled { opacity: 0.4; cursor: default; }
 </style>
 
 <script>
 (function () {
-    const frame      = document.getElementById('map-frame');
-    const applyBtn   = document.getElementById('apply-btn');
-    const statusEl   = document.getElementById('map-status');
-    const yearStart  = document.getElementById('year-start');
-    const yearEnd    = document.getElementById('year-end');
-    const yearDisplay = document.getElementById('year-display');
-    const maxPoints  = document.getElementById('max-points');
+    // ── Palette couleurs (miroir Python) ──────────────────────────────────
+    const EVENT_COLORS = {
+        "Battles":                    "#e74c3c",
+        "Violence against civilians": "#e67e22",
+        "Explosions/Remote violence": "#9b59b6",
+        "Protests":                   "#3498db",
+        "Riots":                      "#f1c40f",
+        "Strategic developments":     "#2ecc71",
+    };
 
-    // ── Year sliders sync ─────────────────────────────────────────────────
+    const LAYOUT_BASE = {
+        mapbox: { style: "carto-darkmatter", center: { lat: 15.0, lon: -2.0 }, zoom: 5 },
+        margin: { r: 0, t: 0, l: 0, b: 0 },
+        paper_bgcolor: "rgba(0,0,0,0)",
+        plot_bgcolor:  "rgba(0,0,0,0)",
+        legend: {
+            bgcolor: "rgba(15,17,23,0.85)",
+            bordercolor: "#2d3250", borderwidth: 1,
+            font: { color: "#e8e8e8", size: 12 },
+            title: { text: "Event Type", font: { color: "#a0a8c0", size: 11 } },
+        },
+        height: 580,
+    };
+
+    const statusEl  = document.getElementById('map-status');
+    const applyBtn  = document.getElementById('apply-btn');
+    const yearStart = document.getElementById('year-start');
+    const yearEnd   = document.getElementById('year-end');
+    const yearDisp  = document.getElementById('year-display');
+
+    let ALL_DATA = [];   // données complètes, chargées une seule fois
+    let mapReady = false;
+
+    // ── Sync sliders ──────────────────────────────────────────────────────
     function syncYears() {
-        let s = parseInt(yearStart.value);
-        let e = parseInt(yearEnd.value);
+        let s = parseInt(yearStart.value), e = parseInt(yearEnd.value);
         if (s > e) { yearStart.value = e; s = e; }
-        yearDisplay.textContent = s + ' – ' + e;
+        yearDisp.textContent = s + ' \u2013 ' + e;
     }
     yearStart.addEventListener('input', syncYears);
     yearEnd.addEventListener('input',   syncYears);
 
-    // ── Build URL from current filters ────────────────────────────────────
-    function buildUrl() {
+    // ── Filtrage client-side ──────────────────────────────────────────────
+    function applyFilters() {
         const countries = [...document.querySelectorAll('.country-cb:checked')]
                             .map(cb => cb.value);
-        const mapType   = document.querySelector('input[name="map-type"]:checked').value;
-        const ys        = yearStart.value;
-        const ye        = yearEnd.value;
-        const mp        = maxPoints.value;
+        const ys      = parseInt(yearStart.value);
+        const ye      = parseInt(yearEnd.value);
+        const mapType = document.querySelector('input[name="map-type"]:checked').value;
 
-        if (countries.length === 0) return null;
-
-        const params = new URLSearchParams();
-        countries.forEach(c => params.append('countries', c));
-        params.set('year_start', ys);
-        params.set('year_end',   ye);
-        params.set('map_type',   mapType);
-        params.set('max_points', mp);
-        return '/api/map/html?' + params.toString();
-    }
-
-    // ── Apply filters ─────────────────────────────────────────────────────
-    applyBtn.addEventListener('click', () => {
-        const url = buildUrl();
-        if (!url) {
+        if (countries.length === 0) {
             statusEl.textContent = 'Select at least one country.';
             statusEl.style.color = '#e74c3c';
             return;
         }
-        statusEl.textContent = 'Loading…';
-        statusEl.style.color = '#f1c40f';
-        frame.src = url;
-    });
 
-    frame.addEventListener('load', () => {
-        statusEl.textContent = 'Ready';
+        const filtered = ALL_DATA.filter(d =>
+            countries.includes(d.co) && d.yr >= ys && d.yr <= ye
+        );
+
+        statusEl.textContent = filtered.length.toLocaleString() + ' incidents displayed';
         statusEl.style.color = '#2ecc71';
-    });
+
+        mapType === 'heatmap' ? renderHeatmap(filtered) : renderScatter(filtered);
+    }
+
+    // ── Scatter (incidents) ───────────────────────────────────────────────
+    function renderScatter(data) {
+        const byType = {};
+        data.forEach(d => {
+            if (!byType[d.et]) byType[d.et] = {
+                lat: [], lon: [], text: [], size: []
+            };
+            const g = byType[d.et];
+            g.lat.push(d.la);
+            g.lon.push(d.lo);
+            g.size.push(Math.min(22, Math.max(5, d.fa * 0.4 + 5)));
+            g.text.push(
+                '<b>' + d.et + '</b><br>' +
+                'Date: '       + d.dt + '<br>' +
+                'Country: '    + d.co + '<br>' +
+                'Region: '     + d.r  + '<br>' +
+                'Location: '   + d.lc + '<br>' +
+                'Actor: '      + d.ac + '<br>' +
+                'Fatalities: ' + d.fa
+            );
+        });
+
+        const traces = Object.entries(byType).map(([et, pts]) => ({
+            type: 'scattermapbox',
+            name: et,
+            lat: pts.lat, lon: pts.lon,
+            mode: 'markers',
+            marker: {
+                color:   EVENT_COLORS[et] || '#95a5a6',
+                size:    pts.size,
+                opacity: 0.75,
+            },
+            text:      pts.text,
+            hoverinfo: 'text',
+        }));
+
+        Plotly.react('map-div', traces, LAYOUT_BASE, { responsive: true });
+    }
+
+    // ── Heatmap (density) ─────────────────────────────────────────────────
+    function renderHeatmap(data) {
+        const trace = {
+            type: 'densitymapbox',
+            lat:    data.map(d => d.la),
+            lon:    data.map(d => d.lo),
+            z:      data.map(d => Math.max(1, d.fa)),
+            radius: 14,
+            colorscale: [
+                [0,    '#0d1b2a'], [0.25, '#1565c0'],
+                [0.5,  '#00e676'], [0.75, '#ff9800'],
+                [1,    '#e74c3c'],
+            ],
+            showscale: true,
+            colorbar: {
+                title: { text: 'Intensity', font: { color: '#a0a8c0' } },
+                tickfont: { color: '#a0a8c0' },
+            },
+        };
+
+        const layout = Object.assign({}, LAYOUT_BASE, { showlegend: false });
+        Plotly.react('map-div', [trace], layout, { responsive: true });
+    }
+
+    // ── Chargement initial des données (une seule fois) ───────────────────
+    fetch('/api/data/map-points')
+        .then(r => r.json())
+        .then(data => {
+            ALL_DATA  = data;
+            mapReady  = true;
+            applyBtn.disabled = false;
+            statusEl.textContent = data.length.toLocaleString() + ' incidents ready';
+            statusEl.style.color = '#2ecc71';
+            renderScatter(data);  // affichage initial : tous les incidents
+        })
+        .catch(() => {
+            statusEl.textContent = 'Error loading data.';
+            statusEl.style.color = '#e74c3c';
+        });
+
+    applyBtn.addEventListener('click', applyFilters);
+
 })();
 </script>
 {% endblock %}

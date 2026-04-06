@@ -1,9 +1,19 @@
 from flask import Flask
+from flask_compress import Compress
+
+compress = Compress()
 
 
 def create_app():
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = "dev-key-change-in-production"
+    app.config["SECRET_KEY"]        = "dev-key-change-in-production"
+    app.config["COMPRESS_MIMETYPES"] = [
+        "text/html", "application/json",
+        "text/css", "application/javascript",
+    ]
+    app.config["COMPRESS_LEVEL"] = 6   # gzip level (1=fast, 9=max)
+
+    compress.init_app(app)
 
     # ── Blueprints ────────────────────────────────────────────────────────────
     from flask_app.routes.main import main_bp
