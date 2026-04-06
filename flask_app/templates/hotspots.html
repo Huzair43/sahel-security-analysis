@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Hotspots : Sahel Security Analysis{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="eyebrow">Sahel Security Analysis</div>
+    <h1>Conflict Hotspots</h1>
+    <p class="subtitle">Most affected regions, locations, and armed groups.</p>
+</div>
+
+<!-- ── Top 15 regions ─────────────────────────────────────────────────── -->
+<p class="section-title">Top 15 Most Affected Regions</p>
+<div class="card chart-container">
+    {{ chart_regions | safe }}
+</div>
+
+<!-- ── Locations + Actors ─────────────────────────────────────────────── -->
+<div class="charts-row">
+    <div>
+        <p class="section-title">Top 10 Locations by Fatalities</p>
+        <div class="card chart-container">{{ chart_locations | safe }}</div>
+    </div>
+    <div>
+        <p class="section-title">Top 10 Most Active Armed Groups</p>
+        <div class="card chart-container">{{ chart_actors | safe }}</div>
+    </div>
+</div>
+
+<!-- ── Deadliest incidents table ──────────────────────────────────────── -->
+<p class="section-title" style="margin-top:1.5rem;">Deadliest Incidents (Top 20)</p>
+<div class="card" style="overflow-x:auto;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Country</th>
+                <th>Region</th>
+                <th>Location</th>
+                <th>Event Type</th>
+                <th>Actor</th>
+                <th>Fatalities</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in deadliest %}
+            <tr>
+                <td>{{ row.event_date }}</td>
+                <td>{{ row.country }}</td>
+                <td>{{ row.admin1 }}</td>
+                <td>{{ row.location }}</td>
+                <td>
+                    <span style="padding:2px 8px;border-radius:4px;font-size:0.75rem;
+                                 background:rgba(231,76,60,0.12);color:#e0a0a0;">
+                        {{ row.event_type }}
+                    </span>
+                </td>
+                <td style="color:#a0a8c0;font-size:0.8rem;">{{ row.actor1 }}</td>
+                <td style="color:#e74c3c;font-weight:600;">{{ row.fatalities }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

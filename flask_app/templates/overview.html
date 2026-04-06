@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}Overview : Sahel Security Analysis{% endblock %}
+
+{% block content %}
+
+<!-- ── Page header ─────────────────────────────────────────────────────── -->
+<div class="page-header">
+    <div class="eyebrow">Sahel Security Analysis</div>
+    <h1>Security Analysis</h1>
+    <p class="subtitle">Armed conflict dynamics in the Sahel: Burkina Faso, Mali, Niger</p>
+</div>
+
+<!-- ── KPIs ───────────────────────────────────────────────────────────── -->
+<p class="section-title">Key Metrics</p>
+<div class="stat-grid">
+
+    <div class="stat-card" style="border-left:3px solid #e74c3c;">
+        <div class="label">Total Incidents</div>
+        <div class="value">{{ kpis.total_incidents }}</div>
+    </div>
+
+    <div class="stat-card" style="border-left:3px solid #e67e22;">
+        <div class="label">Total Fatalities</div>
+        <div class="value">{{ kpis.total_fatalities }}</div>
+    </div>
+
+    <div class="stat-card" style="border-left:3px solid #9b59b6;">
+        <div class="label">Locations</div>
+        <div class="value">{{ kpis.locations }}</div>
+    </div>
+
+    <div class="stat-card" style="border-left:3px solid #3498db;">
+        <div class="label">Most Affected</div>
+        <div class="value" style="font-size:1.1rem;">{{ kpis.most_affected }}</div>
+    </div>
+
+    <div class="stat-card" style="border-left:3px solid #2ecc71;">
+        <div class="label">Deadliest Type</div>
+        <div class="value" style="font-size:1rem;">{{ kpis.deadliest_type }}</div>
+    </div>
+
+</div>
+
+<!-- ── Charts row ─────────────────────────────────────────────────────── -->
+<div class="charts-row">
+    <div class="card chart-container">
+        {{ chart_country | safe }}
+    </div>
+    <div class="card chart-container">
+        {{ chart_type | safe }}
+    </div>
+</div>
+
+<!-- ── Monthly trend ──────────────────────────────────────────────────── -->
+<p class="section-title">Monthly Trend</p>
+<div class="card chart-container">
+    {{ chart_monthly | safe }}
+</div>
+
+<!-- ── Navigation cards ───────────────────────────────────────────────── -->
+<p class="section-title">Explore</p>
+<div class="cards-row">
+
+    <a href="{{ url_for('map.map_view') }}" class="nav-card">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+             viewBox="0 0 24 24" fill="none" stroke="#e74c3c"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+            <line x1="8" y1="2" x2="8" y2="18"/>
+            <line x1="16" y1="6" x2="16" y2="22"/>
+        </svg>
+        <div class="nav-card-title">Conflict Map</div>
+        <div class="nav-card-desc">Interactive incident map</div>
+    </a>
+
+    <a href="{{ url_for('trends.trends') }}" class="nav-card">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+             viewBox="0 0 24 24" fill="none" stroke="#e74c3c"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+            <polyline points="17 6 23 6 23 12"/>
+        </svg>
+        <div class="nav-card-title">Trends</div>
+        <div class="nav-card-desc">Temporal analysis</div>
+    </a>
+
+    <a href="{{ url_for('hotspots.hotspots') }}" class="nav-card">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+             viewBox="0 0 24 24" fill="none" stroke="#e74c3c"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="6"/>
+            <circle cx="12" cy="12" r="2"/>
+        </svg>
+        <div class="nav-card-title">Hotspots</div>
+        <div class="nav-card-desc">Most affected zones</div>
+    </a>
+
+    <a href="{{ url_for('bayesian.bayesian') }}" class="nav-card">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+             viewBox="0 0 24 24" fill="none" stroke="#e74c3c"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        <div class="nav-card-title">Bayesian</div>
+        <div class="nav-card-desc">Probabilistic model</div>
+    </a>
+
+    <a href="{{ url_for('about.about') }}" class="nav-card">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+             viewBox="0 0 24 24" fill="none" stroke="#e74c3c"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        <div class="nav-card-title">About</div>
+        <div class="nav-card-desc">Methodology & findings</div>
+    </a>
+
+</div>
+
+<!-- ── Raw data table ─────────────────────────────────────────────────── -->
+<p class="section-title" style="margin-top:2rem;">
+    Raw Data Sample
+    <span style="font-size:0.7rem;color:#606480;font-weight:400;
+                 text-transform:none;letter-spacing:0;">, 50 most recent incidents</span>
+</p>
+<div class="card" style="overflow-x:auto;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Country</th>
+                <th>Region</th>
+                <th>Location</th>
+                <th>Event Type</th>
+                <th>Fatalities</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in raw_data %}
+            <tr>
+                <td>{{ row.event_date }}</td>
+                <td>{{ row.country }}</td>
+                <td>{{ row.admin1 }}</td>
+                <td>{{ row.location }}</td>
+                <td>
+                    <span style="
+                        padding: 2px 8px;
+                        border-radius: 4px;
+                        font-size: 0.75rem;
+                        background: rgba(231,76,60,0.12);
+                        color: #e0a0a0;
+                    ">{{ row.event_type }}</span>
+                </td>
+                <td style="color: {% if row.fatalities > 0 %}#e74c3c{% else %}#606480{% endif %};">
+                    {{ row.fatalities }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

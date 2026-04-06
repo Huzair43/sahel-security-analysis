@@ -1,8 +1,13 @@
 requests>=2.31
 pandas>=2.0
 python-dotenv>=1.0
-streamlit>=1.30
+numpy>=1.24
 plotly>=5.18
 folium>=0.15
+
+# Streamlit (app existante — conservée)
+streamlit>=1.30
 streamlit-folium>=0.20
-numpy>=1.24
+
+# Flask (nouvelle app)
+flask>=3.0

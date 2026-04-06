@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sahel Security Analysis{% endblock %}</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+<!-- ── Hamburger (mobile) ──────────────────────────────────────────────── -->
+<button class="hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+</button>
+
+<!-- ── Overlay (mobile) ───────────────────────────────────────────────── -->
+<div class="overlay" id="overlay"></div>
+
+<div class="layout">
+
+    <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-brand">
+            <div class="eyebrow">Security Intelligence</div>
+            <div class="title">Sahel Security<br>Analysis</div>
+        </div>
+
+        <nav class="nav">
+
+            <a href="{{ url_for('main.index') }}"
+               class="nav-item {% if request.endpoint == 'main.index' %}active{% endif %}">
+                <!-- Shield -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Overview
+            </a>
+
+            <a href="{{ url_for('map.map_view') }}"
+               class="nav-item {% if request.endpoint == 'map.map_view' %}active{% endif %}">
+                <!-- Map -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+                    <line x1="8" y1="2" x2="8" y2="18"/>
+                    <line x1="16" y1="6" x2="16" y2="22"/>
+                </svg>
+                Conflict Map
+            </a>
+
+            <a href="{{ url_for('trends.trends') }}"
+               class="nav-item {% if request.endpoint == 'trends.trends' %}active{% endif %}">
+                <!-- Trending-up -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                    <polyline points="17 6 23 6 23 12"/>
+                </svg>
+                Trends
+            </a>
+
+            <a href="{{ url_for('hotspots.hotspots') }}"
+               class="nav-item {% if request.endpoint == 'hotspots.hotspots' %}active{% endif %}">
+                <!-- Target -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="6"/>
+                    <circle cx="12" cy="12" r="2"/>
+                </svg>
+                Hotspots
+            </a>
+
+            <a href="{{ url_for('bayesian.bayesian') }}"
+               class="nav-item {% if request.endpoint == 'bayesian.bayesian' %}active{% endif %}">
+                <!-- Activity -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                Bayesian
+            </a>
+
+            <a href="{{ url_for('about.about') }}"
+               class="nav-item {% if request.endpoint == 'about.about' %}active{% endif %}">
+                <!-- Book -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+                About
+            </a>
+
+            <div class="nav-divider"></div>
+
+            <!-- Chatbot: intégration à venir -->
+            <span class="nav-item chat-placeholder">
+                <!-- Message-circle -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14
+                             a2 2 0 0 1 2 2z"/>
+                </svg>
+                Chat
+                <span class="badge">soon</span>
+            </span>
+
+        </nav>
+
+        <div class="sidebar-footer">
+            Sahel Security Analysis<br>
+            Built with ACLED data
+        </div>
+
+    </aside>
+
+    <!-- ── Main content ──────────────────────────────────────────────────── -->
+    <main class="main">
+        {% block content %}{% endblock %}
+    </main>
+
+</div>
+
+<!-- ── Sidebar toggle (mobile) ────────────────────────────────────────── -->
+<script>
+    const sidebar  = document.getElementById('sidebar');
+    const hamburger = document.getElementById('hamburger');
+    const overlay  = document.getElementById('overlay');
+
+    hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+    });
+</script>
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>

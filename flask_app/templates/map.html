@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% block title %}Conflict Map : Sahel Security Analysis{% endblock %}
+
+{% block content %}
+
+<!-- ── Page header ─────────────────────────────────────────────────────── -->
+<div class="page-header">
+    <div class="eyebrow">Sahel Security Analysis</div>
+    <h1>Conflict Map</h1>
+    <p class="subtitle">Interactive visualization of all conflict incidents.</p>
+</div>
+
+<!-- ── Filter bar ─────────────────────────────────────────────────────── -->
+<div class="card" style="margin-bottom:1rem;">
+    <div style="display:flex;flex-wrap:wrap;gap:1.5rem;align-items:flex-end;">
+
+        <!-- Countries -->
+        <div>
+            <div class="filter-label">Countries</div>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                {% for country, color in [
+                    ("Burkina Faso", "#e74c3c"),
+                    ("Mali",         "#3498db"),
+                    ("Niger",        "#2ecc71")
+                ] %}
+                <label class="chip-label" style="--chip-color:{{ color }};">
+                    <input type="checkbox" class="country-cb"
+                           value="{{ country }}" checked>
+                    <span>{{ country }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Year range -->
+        <div>
+            <div class="filter-label">
+                Years: <span id="year-display">2020 – 2025</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+                <input type="range" id="year-start" min="2020" max="2025"
+                       value="2020" class="range-input">
+                <input type="range" id="year-end"   min="2020" max="2025"
+                       value="2025" class="range-input">
+            </div>
+        </div>
+
+        <!-- Map type -->
+        <div>
+            <div class="filter-label">Map type</div>
+            <div style="display:flex;gap:0.4rem;">
+                <label class="radio-label">
+                    <input type="radio" name="map-type"
+                           value="incidents" checked> Incidents
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="map-type"
+                           value="heatmap"> Heatmap
+                </label>
+            </div>
+        </div>
+
+        <!-- Max points -->
+        <div>
+            <div class="filter-label">Max points</div>
+            <select id="max-points" class="select-input">
+                <option value="1000">1 000</option>
+                <option value="2000" selected>2 000</option>
+                <option value="5000">5 000</option>
+                <option value="10000">10 000</option>
+                <option value="all">All</option>
+            </select>
+        </div>
+
+        <!-- Apply button -->
+        <div>
+            <button id="apply-btn" class="btn-primary">Apply filters</button>
+        </div>
+
+    </div>
+
+    <!-- Caption -->
+    <div style="margin-top:0.75rem;font-size:0.78rem;color:#606480;">
+        Dataset: <strong style="color:#a0a8c0;">{{ total_incidents }}</strong> incidents total
+        &nbsp;·&nbsp;
+        <span id="map-status" style="color:#2ecc71;">Ready</span>
+    </div>
+</div>
+
+<!-- ── Map iframe ──────────────────────────────────────────────────────── -->
+<div class="card" style="padding:0;overflow:hidden;border-radius:10px;">
+    <iframe id="map-frame"
+            src="/api/map/html?countries=Burkina+Faso&countries=Mali&countries=Niger&year_start=2020&year_end=2025&map_type=incidents&max_points=2000"
+            style="width:100%;height:580px;border:none;display:block;"
+            title="Conflict Map">
+    </iframe>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<style>
+/* ── Filter bar styles ───────────────────────────────────────────────── */
+.filter-label {
+    font-size: 0.72rem;
+    color: #a0a8c0;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+.chip-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--chip-color, #2d3250);
+    background: rgba(0,0,0,0.2);
+    color: #a0a8c0;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+}
+
+.chip-label input { display: none; }
+
+.chip-label:has(input:checked) {
+    background: color-mix(in srgb, var(--chip-color) 18%, transparent);
+    color: #ffffff;
+}
+
+.range-input {
+    -webkit-appearance: none;
+    width: 100px;
+    height: 4px;
+    border-radius: 2px;
+    background: #2d3250;
+    outline: none;
+    cursor: pointer;
+}
+.range-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #e74c3c;
+    cursor: pointer;
+}
+
+.radio-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid #2d3250;
+    background: transparent;
+    color: #a0a8c0;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.radio-label:has(input:checked) {
+    background: rgba(231,76,60,0.15);
+    color: #ffffff;
+    border-color: #e74c3c;
+}
+.radio-label input { display: none; }
+
+.select-input {
+    background: #1a1d2e;
+    border: 1px solid #2d3250;
+    border-radius: 6px;
+    color: #e8e8e8;
+    padding: 5px 10px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    outline: none;
+}
+
+.btn-primary {
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+.btn-primary:hover { background: #c0392b; }
+</style>
+
+<script>
+(function () {
+    const frame      = document.getElementById('map-frame');
+    const applyBtn   = document.getElementById('apply-btn');
+    const statusEl   = document.getElementById('map-status');
+    const yearStart  = document.getElementById('year-start');
+    const yearEnd    = document.getElementById('year-end');
+    const yearDisplay = document.getElementById('year-display');
+    const maxPoints  = document.getElementById('max-points');
+
+    // ── Year sliders sync ─────────────────────────────────────────────────
+    function syncYears() {
+        let s = parseInt(yearStart.value);
+        let e = parseInt(yearEnd.value);
+        if (s > e) { yearStart.value = e; s = e; }
+        yearDisplay.textContent = s + ' – ' + e;
+    }
+    yearStart.addEventListener('input', syncYears);
+    yearEnd.addEventListener('input',   syncYears);
+
+    // ── Build URL from current filters ────────────────────────────────────
+    function buildUrl() {
+        const countries = [...document.querySelectorAll('.country-cb:checked')]
+                            .map(cb => cb.value);
+        const mapType   = document.querySelector('input[name="map-type"]:checked').value;
+        const ys        = yearStart.value;
+        const ye        = yearEnd.value;
+        const mp        = maxPoints.value;
+
+        if (countries.length === 0) return null;
+
+        const params = new URLSearchParams();
+        countries.forEach(c => params.append('countries', c));
+        params.set('year_start', ys);
+        params.set('year_end',   ye);
+        params.set('map_type',   mapType);
+        params.set('max_points', mp);
+        return '/api/map/html?' + params.toString();
+    }
+
+    // ── Apply filters ─────────────────────────────────────────────────────
+    applyBtn.addEventListener('click', () => {
+        const url = buildUrl();
+        if (!url) {
+            statusEl.textContent = 'Select at least one country.';
+            statusEl.style.color = '#e74c3c';
+            return;
+        }
+        statusEl.textContent = 'Loading…';
+        statusEl.style.color = '#f1c40f';
+        frame.src = url;
+    });
+
+    frame.addEventListener('load', () => {
+        statusEl.textContent = 'Ready';
+        statusEl.style.color = '#2ecc71';
+    });
+})();
+</script>
+{% endblock %}
