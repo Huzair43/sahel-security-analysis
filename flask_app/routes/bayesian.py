@@ -90,7 +90,7 @@ def bayesian():
         line=dict(color="white", width=1, dash="dot"),
     ))
     fig2.update_layout(
-        title="Conflict (T-1) vs Inflation (T) — Sahel 2021–2024",
+        title="Conflict (T-1) vs Inflation (T), Sahel 2021:2024",
         xaxis_title="Conflict Incidents (previous year)",
         yaxis_title="Inflation Rate (%)",
         template="plotly_dark", height=450,

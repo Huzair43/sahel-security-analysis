@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+
+  # ── Ollama : LLM runtime ──────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: sahel_ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+    # Pull Gemma 2B on first start
+    entrypoint: >
+      sh -c "ollama serve &
+             sleep 5 &&
+             ollama pull gemma4:latest &&
+             wait"
+
+  # ── Flask app ─────────────────────────────────────────────────────────────
+  flask:
+    build: .
+    container_name: sahel_flask
+    ports:
+      - "5000:5000"
+    environment:
+      - CHAT_BACKEND=local
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=gemma4:latest
+    env_file:
+      - .env
+    depends_on:
+      - ollama
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data:ro
+
+volumes:
+  ollama_data:

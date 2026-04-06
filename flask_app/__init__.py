@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask
 from flask_compress import Compress
 
@@ -6,7 +8,7 @@ compress = Compress()
 
 def create_app():
     app = Flask(__name__)
-    app.config["SECRET_KEY"]        = "dev-key-change-in-production"
+    app.config["SECRET_KEY"]        = os.environ.get("SECRET_KEY", os.urandom(32))
     app.config["COMPRESS_MIMETYPES"] = [
         "text/html", "application/json",
         "text/css", "application/javascript",
@@ -25,7 +27,7 @@ def create_app():
 
     # API blueprints
     from flask_app.api.data import data_bp
-    from flask_app.api.chat import chat_bp  # chatbot — intégration à venir
+    from flask_app.api.chat import chat_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(map_bp)

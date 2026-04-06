@@ -1,6 +1,5 @@
 """
-API Blueprint — endpoints de données pour les graphiques interactifs.
-Ces endpoints retournent du JSON consommé par Plotly.js côté client.
+Data API blueprint: JSON endpoints consumed by Plotly.js on the client side.
 """
 import pandas as pd
 import plotly.express as px
