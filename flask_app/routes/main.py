@@ -63,8 +63,18 @@ def index():
         template="plotly_dark",
         hole=0.4,
     )
-    fig2.update_layout(height=350,
-                       paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    fig2.update_layout(
+        height=420,
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.05,
+            xanchor="center",
+            x=0.5,
+            font=dict(size=11),
+        ),
+    )
     chart_type = fig2.to_html(**_PLOTLY_OPTS)
 
     # ── Chart 3: Monthly incidents by country (line) ──────────────────────────

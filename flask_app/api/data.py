@@ -128,8 +128,13 @@ def _build_scatter_map(df: pd.DataFrame) -> str:
             bgcolor="rgba(15,17,23,0.85)",
             bordercolor="#2d3250",
             borderwidth=1,
-            font=dict(color="#e8e8e8", size=12),
-            title=dict(text="Event Type", font=dict(color="#a0a8c0", size=11)),
+            font=dict(color="#e8e8e8", size=11),
+            title=dict(text="Event Type", font=dict(color="#a0a8c0", size=10)),
+            orientation="h",
+            yanchor="top",
+            y=-0.04,
+            xanchor="center",
+            x=0.5,
         ),
     )
     return fig.to_html(**_PLOTLY_OPTS)

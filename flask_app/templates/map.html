@@ -75,7 +75,7 @@
 
 <!-- ── Map ────────────────────────────────────────────────────────────── -->
 <div class="card" style="padding:0;overflow:hidden;border-radius:10px;">
-    <div id="map-div" style="height:580px;"></div>
+    <div id="map-div" style="height:520px;"></div>
 </div>
 
 {% endblock %}
@@ -101,8 +101,13 @@
         legend: {
             bgcolor: "rgba(15,17,23,0.85)",
             bordercolor: "#2d3250", borderwidth: 1,
-            font: { color: "#e8e8e8", size: 12 },
-            title: { text: "Event Type", font: { color: "#a0a8c0", size: 11 } },
+            font: { color: "#e8e8e8", size: 11 },
+            title: { text: "Event Type", font: { color: "#a0a8c0", size: 10 } },
+            orientation: "h",
+            yanchor: "top",
+            y: -0.04,
+            xanchor: "center",
+            x: 0.5,
         },
         height: 580,
     };
