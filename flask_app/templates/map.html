@@ -75,7 +75,7 @@
 
 <!-- ── Map ────────────────────────────────────────────────────────────── -->
 <div class="card" style="padding:0;overflow:hidden;border-radius:10px;">
-    <div id="map-div" style="height:520px;"></div>
+    <div id="map-div" style="height:580px;"></div>
 </div>
 
 {% endblock %}
@@ -95,7 +95,7 @@
 
     const LAYOUT_BASE = {
         mapbox: { style: "carto-darkmatter", center: { lat: 15.0, lon: -2.0 }, zoom: 5 },
-        margin: { r: 0, t: 0, l: 0, b: 0 },
+        margin: { r: 0, t: 0, l: 0, b: 60 },
         paper_bgcolor: "rgba(0,0,0,0)",
         plot_bgcolor:  "rgba(0,0,0,0)",
         legend: {

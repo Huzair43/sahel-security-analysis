@@ -122,7 +122,7 @@ def _build_scatter_map(df: pd.DataFrame) -> str:
     )
     fig.update_layout(
         height=580,
-        margin={"r": 0, "t": 0, "l": 0, "b": 0},
+        margin={"r": 0, "t": 0, "l": 0, "b": 60},
         paper_bgcolor="rgba(0,0,0,0)",
         legend=dict(
             bgcolor="rgba(15,17,23,0.85)",
