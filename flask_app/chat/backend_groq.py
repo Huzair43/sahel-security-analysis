@@ -1,12 +1,11 @@
 """
-Groq API backend: Gemma 2 9B (or any Groq-hosted model).
+Groq API backend: Llama 3.1 8B Instant (or any Groq-hosted model).
 
 Groq free tier: ~6,000 requests/day, ~500,000 tokens/day.
-We use gemma2-9b-it to stay consistent with the local Gemma setup.
 
 Environment variables:
   GROQ_API_KEY  : required
-  GROQ_MODEL    : default gemma2-9b-it
+  GROQ_MODEL    : default llama-3.1-8b-instant
 """
 
 import os

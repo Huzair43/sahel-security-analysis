@@ -4,32 +4,54 @@
 {% block content %}
 
 <div class="page-header">
-    <div class="eyebrow">Sahel Security Analysis</div>
+    <div class="eyebrow">Analysis</div>
     <h1>Conflict Hotspots</h1>
-    <p class="subtitle">Most affected regions, locations, and armed groups.</p>
+    <p class="subtitle">
+        Concentration of violence by region, locality and armed group.
+        {{ n_regions }} administrative regions, {{ n_actors }} distinct actors.
+    </p>
 </div>
 
-<!-- ── Top 15 regions ─────────────────────────────────────────────────── -->
-<p class="section-title">Top 15 Most Affected Regions</p>
-<div class="card chart-container card-framed">
+<h2 class="section-title">Regions</h2>
+
+<div class="card chart-container">
+    <div class="chart-head">
+        <div class="chart-title">Top 15 regions by incident count</div>
+        <div class="chart-meta">coloured by country</div>
+    </div>
     {{ chart_regions | safe }}
 </div>
 
-<!-- ── Locations + Actors ─────────────────────────────────────────────── -->
+<h2 class="section-title">Localities and actors</h2>
+
 <div class="charts-row">
-    <div>
-        <p class="section-title">Top 10 Locations by Fatalities</p>
-        <div class="card chart-container card-framed">{{ chart_locations | safe }}</div>
+
+    <div class="card chart-container">
+        <div class="chart-head">
+            <div class="chart-title">Top 10 localities by fatalities</div>
+        </div>
+        {{ chart_locations | safe }}
     </div>
-    <div>
-        <p class="section-title">Top 10 Most Active Armed Groups</p>
-        <div class="card chart-container card-framed">{{ chart_actors | safe }}</div>
+
+    <div class="card chart-container">
+        <div class="chart-head">
+            <div class="chart-title">Top 10 actors by incident count</div>
+        </div>
+        {{ chart_actors | safe }}
+        <p class="chart-note">
+            Actor names are truncated on the axis, the full name appears on hover.
+            ACLED records the primary actor only.
+        </p>
     </div>
+
 </div>
 
-<!-- ── Deadliest incidents table ──────────────────────────────────────── -->
-<p class="section-title" style="margin-top:1.5rem;">Deadliest Incidents (Top 20)</p>
-<div class="card card-framed" style="overflow-x:auto;padding:0;">
+<h2 class="section-title">
+    Deadliest incidents
+    <span class="section-note">20 highest fatality counts on record</span>
+</h2>
+
+<div class="card card--flush" style="overflow-x:auto;">
     <table class="data-table">
         <thead>
             <tr>
@@ -37,25 +59,26 @@
                 <th>Country</th>
                 <th>Region</th>
                 <th>Location</th>
-                <th>Event Type</th>
+                <th>Event type</th>
                 <th>Actor</th>
-                <th>Fatalities</th>
+                <th style="text-align:right;">Fatalities</th>
             </tr>
         </thead>
         <tbody>
             {% for row in deadliest %}
             <tr>
-                <td>{{ row.event_date }}</td>
+                <td class="cell-mono">{{ row.event_date }}</td>
                 <td>{{ row.country }}</td>
-                <td>{{ row.admin1 }}</td>
+                <td class="cell-quiet">{{ row.admin1 }}</td>
                 <td>{{ row.location }}</td>
                 <td>
-                    <span class="badge-event">{{ row.event_type }}</span>
+                    <span class="badge-event"
+                          style="--event-color:{{ event_colors.get(row.event_type, '') }};">
+                        {{ row.event_type }}
+                    </span>
                 </td>
-                <td style="color:var(--text-secondary);font-size:0.8rem;">{{ row.actor1 }}</td>
-                <td style="font-family:var(--font-mono);color:var(--red);font-weight:600;">
-                    {{ row.fatalities }}
-                </td>
+                <td class="cell-quiet">{{ row.actor1 }}</td>
+                <td class="num num--signal">{{ row.fatalities }}</td>
             </tr>
             {% endfor %}
         </tbody>

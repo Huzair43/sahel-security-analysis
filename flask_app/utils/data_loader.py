@@ -45,18 +45,6 @@ def load_monthly_total() -> pd.DataFrame:
     return df
 
 
-# ── Shared colour palettes ────────────────────────────────────────────────────
-EVENT_COLORS = {
-    "Battles":                    "#e74c3c",
-    "Violence against civilians": "#e67e22",
-    "Explosions/Remote violence": "#9b59b6",
-    "Protests":                   "#3498db",
-    "Riots":                      "#f1c40f",
-    "Strategic developments":     "#2ecc71",
-}
-
-COUNTRY_COLORS = {
-    "Burkina Faso": "#e74c3c",
-    "Mali":         "#3498db",
-    "Niger":        "#2ecc71",
-}
+# ── Palettes partagées ────────────────────────────────────────────────────────
+# Source unique : flask_app/theme.py. Réexportées ici pour les imports existants.
+from flask_app.theme import COUNTRY_COLORS, EVENT_COLORS, EVENT_ORDER  # noqa: E402,F401

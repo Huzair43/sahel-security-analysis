@@ -4,52 +4,85 @@
 {% block content %}
 
 <div class="page-header">
-    <div class="eyebrow">Sahel Security Analysis</div>
+    <div class="eyebrow">Analysis</div>
     <h1>Temporal Trends</h1>
-    <p class="subtitle">Monthly evolution of conflict intensity, anomaly detection, and forecast.</p>
+    <p class="subtitle">
+        Monthly evolution of conflict intensity and linear projection.
+        {{ n_months }} monthly observations, {{ period }}.
+    </p>
 </div>
 
 <!-- ── Tabs ───────────────────────────────────────────────────────────── -->
 <div class="tabs">
-    <button class="tab-btn active" data-tab="incidents">Monthly Incidents</button>
+    <button class="tab-btn active" data-tab="incidents">Incidents</button>
     <button class="tab-btn"       data-tab="fatalities">Fatalities</button>
-    <button class="tab-btn"       data-tab="types">Event Types</button>
-    <button class="tab-btn"       data-tab="forecast">Trend &amp; Forecast</button>
+    <button class="tab-btn"       data-tab="types">Event types</button>
+    <button class="tab-btn"       data-tab="forecast">Trend and projection</button>
 </div>
 
-<div class="card chart-container card-framed tab-panel active" id="tab-incidents">
-    {{ chart_incidents | safe }}
+<div class="tab-panel active" id="tab-incidents">
+    <div class="card chart-container">
+        <div class="chart-head">
+            <div class="chart-title">Monthly incidents by country</div>
+            <div class="chart-meta">{{ period }}</div>
+        </div>
+        {{ chart_incidents | safe }}
+    </div>
 </div>
 
-<div class="card chart-container card-framed tab-panel" id="tab-fatalities">
-    {{ chart_fatalities | safe }}
+<div class="tab-panel" id="tab-fatalities">
+    <div class="card chart-container">
+        <div class="chart-head">
+            <div class="chart-title">Monthly fatalities by country</div>
+            <div class="chart-meta">{{ period }}</div>
+        </div>
+        {{ chart_fatalities | safe }}
+    </div>
 </div>
 
-<div class="card chart-container card-framed tab-panel" id="tab-types">
-    {{ chart_types | safe }}
+<div class="tab-panel" id="tab-types">
+    <div class="card chart-container">
+        <div class="chart-head">
+            <div class="chart-title">Monthly incidents by event type</div>
+            <div class="chart-meta">stacked, {{ period }}</div>
+        </div>
+        {{ chart_types | safe }}
+    </div>
 </div>
 
 <div class="tab-panel" id="tab-forecast">
-    <!-- Metrics row -->
-    <div class="stat-grid stagger" style="grid-template-columns:repeat(3,1fr);margin-bottom:1rem;">
-        <div class="stat-card" style="--accent-color:#e74c3c;">
-            <div class="label">Trend Slope</div>
+
+    <div class="stat-grid" style="margin-bottom:var(--sp-3);">
+        <div class="stat-card">
+            <div class="label">Trend slope</div>
             <div class="value">{{ trend_metrics.slope }}</div>
+            <div class="delta">incidents per month</div>
         </div>
-        <div class="stat-card" style="--accent-color:#9b59b6;">
-            <div class="label">R²</div>
+        <div class="stat-card">
+            <div class="label">R squared</div>
             <div class="value">{{ trend_metrics.r_squared }}</div>
+            <div class="delta">linear fit on monthly totals</div>
         </div>
-        <div class="stat-card" style="--accent-color:#2ecc71;">
+        <div class="stat-card {% if trend_metrics.rising %}stat-card--signal{% endif %}">
             <div class="label">Direction</div>
-            <div class="value text-value" style="color:{{ trend_metrics.trend_color }};">
-                {{ trend_metrics.trend }}
-            </div>
+            <div class="value text-value">{{ trend_metrics.trend }}</div>
+            <div class="delta">over the full period</div>
         </div>
     </div>
-    <div class="card chart-container card-framed">
+
+    <div class="card chart-container">
+        <div class="chart-head">
+            <div class="chart-title">Trend analysis and 6 month projection</div>
+            <div class="chart-meta">linear extrapolation</div>
+        </div>
         {{ chart_forecast | safe }}
+        <p class="chart-note">
+            The projection extends the fitted linear trend. It carries no
+            confidence interval and assumes conditions stay unchanged, so it
+            should be read as a baseline, not as a forecast.
+        </p>
     </div>
+
 </div>
 
 {% endblock %}
@@ -62,6 +95,11 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+
+        /* Plotly ne mesure pas correctement un conteneur masqué : on relance
+           le resize à l'affichage de l'onglet. */
+        document.querySelectorAll('#tab-' + btn.dataset.tab + ' .js-plotly-plot')
+            .forEach(el => Plotly.Plots.resize(el));
     });
 });
 </script>

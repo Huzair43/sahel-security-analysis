@@ -3,9 +3,18 @@ Data API blueprint: JSON endpoints consumed by Plotly.js on the client side.
 """
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 from flask import Blueprint, jsonify, request
 
+from flask_app.theme import (
+    FONT_MONO,
+    INK_1,
+    INK_3,
+    INK_4,
+    PLOTLY_OPTS,
+    RULE_STRONG,
+    SEQUENTIAL,
+    SURFACE_3,
+)
 from flask_app.utils.data_loader import (
     EVENT_COLORS,
     load_main_data,
@@ -80,7 +89,12 @@ def map_points():
 
 # ── Carte Plotly (WebGL, supporte 23 000+ points sans lag) ───────────────────
 
-_PLOTLY_OPTS = dict(full_html=False, include_plotlyjs=False, config={"responsive": True})
+_HOVERLABEL = dict(
+    bgcolor=SURFACE_3,
+    bordercolor=RULE_STRONG,
+    font=dict(family=FONT_MONO, size=11, color=INK_1),
+    align="left",
+)
 
 
 def _build_scatter_map(df: pd.DataFrame) -> str:
@@ -117,27 +131,26 @@ def _build_scatter_map(df: pd.DataFrame) -> str:
         mapbox_style="carto-darkmatter",
         center={"lat": 15.0, "lon": -2.0},
         zoom=5,
-        opacity=0.75,
-        template="plotly_dark",
+        opacity=0.72,
     )
     fig.update_layout(
-        height=580,
-        margin={"r": 0, "t": 0, "l": 0, "b": 60},
+        height=600,
+        margin={"r": 0, "t": 0, "l": 0, "b": 48},
         paper_bgcolor="rgba(0,0,0,0)",
+        hoverlabel=_HOVERLABEL,
         legend=dict(
-            bgcolor="rgba(15,17,23,0.85)",
-            bordercolor="#2d3250",
-            borderwidth=1,
-            font=dict(color="#e8e8e8", size=11),
-            title=dict(text="Event Type", font=dict(color="#a0a8c0", size=10)),
+            bgcolor="rgba(0,0,0,0)",
+            borderwidth=0,
+            font=dict(family=FONT_MONO, size=10, color=INK_3),
+            title=dict(text=""),
             orientation="h",
             yanchor="top",
-            y=-0.04,
-            xanchor="center",
-            x=0.5,
+            y=-0.02,
+            xanchor="left",
+            x=0,
         ),
     )
-    return fig.to_html(**_PLOTLY_OPTS)
+    return fig.to_html(**PLOTLY_OPTS)
 
 
 def _build_density_map(df: pd.DataFrame) -> str:
@@ -152,19 +165,23 @@ def _build_density_map(df: pd.DataFrame) -> str:
         mapbox_style="carto-darkmatter",
         center={"lat": 15.0, "lon": -2.0},
         zoom=5,
-        color_continuous_scale=["#0d1b2a", "#1565c0", "#00e676", "#ff9800", "#e74c3c"],
-        template="plotly_dark",
+        color_continuous_scale=SEQUENTIAL,
     )
     fig.update_layout(
-        height=580,
+        height=600,
         margin={"r": 0, "t": 0, "l": 0, "b": 0},
         paper_bgcolor="rgba(0,0,0,0)",
+        hoverlabel=_HOVERLABEL,
         coloraxis_colorbar=dict(
-            title=dict(text="Intensity", font=dict(color="#a0a8c0")),
-            tickfont=dict(color="#a0a8c0"),
+            title=dict(text="intensity",
+                       font=dict(family=FONT_MONO, size=10, color=INK_4)),
+            tickfont=dict(family=FONT_MONO, size=10, color=INK_3),
+            outlinewidth=0,
+            thickness=8,
+            len=0.6,
         ),
     )
-    return fig.to_html(**_PLOTLY_OPTS)
+    return fig.to_html(**PLOTLY_OPTS)
 
 
 @data_bp.route("/map/chart")
@@ -183,7 +200,11 @@ def map_chart():
     ].copy()
 
     if df_f.empty:
-        return "<p style='color:#a0a8c0;padding:2rem;'>No data for the selected filters.</p>"
+        return (
+            "<p style='color:var(--ink-3);padding:var(--sp-6);"
+            "font-family:var(--font-mono);font-size:0.6875rem;'>"
+            "no data for the selected filters</p>"
+        )
 
     chart_html = (
         _build_scatter_map(df_f) if map_type == "incidents"

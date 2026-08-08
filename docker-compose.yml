@@ -15,7 +15,7 @@ services:
     entrypoint: >
       sh -c "ollama serve &
              sleep 5 &&
-             ollama pull gemma4:latest &&
+             ollama pull gemma2:2b &&
              wait"
 
   # ── Flask app ─────────────────────────────────────────────────────────────
@@ -27,7 +27,7 @@ services:
     environment:
       - CHAT_BACKEND=local
       - OLLAMA_HOST=http://ollama:11434
-      - OLLAMA_MODEL=gemma4:latest
+      - OLLAMA_MODEL=gemma2:2b
     env_file:
       - .env
     depends_on:

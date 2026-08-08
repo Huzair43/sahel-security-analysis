@@ -4,124 +4,136 @@
 {% block content %}
 
 <div class="page-header">
-    <div class="eyebrow">Sahel Security Analysis</div>
+    <div class="eyebrow">Dashboard</div>
     <h1>Conflict Map</h1>
-    <p class="subtitle">Interactive visualization of all conflict incidents.</p>
+    <p class="subtitle">
+        Every recorded incident, filtered in the browser.
+        Marker size encodes fatalities, colour encodes event type.
+    </p>
 </div>
 
 <!-- ── Filter bar ─────────────────────────────────────────────────────── -->
-<div class="card" style="margin-bottom:1rem;">
-    <div style="display:flex;flex-wrap:wrap;gap:1.5rem;align-items:flex-end;">
+<div class="card" style="margin-bottom:var(--sp-3);">
+    <div class="filter-bar">
 
-        <!-- Countries -->
-        <div>
+        <div class="filter-group">
             <div class="filter-label">Countries</div>
-            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-                {% for country, color in [
-                    ("Burkina Faso", "#e74c3c"),
-                    ("Mali",         "#3498db"),
-                    ("Niger",        "#2ecc71")
-                ] %}
-                <label class="chip-label" style="--chip-color:{{ color }};--chip-bg:color-mix(in srgb, {{ color }} 18%, transparent);">
-                    <input type="checkbox" class="country-cb"
-                           value="{{ country }}" checked>
+            <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap;">
+                {% for country, color in country_colors.items() %}
+                <label class="chip-label" style="--chip-color:{{ color }};">
+                    <input type="checkbox" class="country-cb" value="{{ country }}" checked>
                     <span>{{ country }}</span>
                 </label>
                 {% endfor %}
             </div>
         </div>
 
-        <!-- Year range -->
-        <div>
+        <div class="filter-group">
             <div class="filter-label">
-                Years: <span id="year-display">2020 : 2025</span>
+                Years <span id="year-display" style="color:var(--ink-1);">{{ year_min }} : {{ year_max }}</span>
             </div>
-            <div style="display:flex;align-items:center;gap:0.5rem;">
-                <input type="range" id="year-start" min="2020" max="2025"
-                       value="2020" class="range-input">
-                <input type="range" id="year-end" min="2020" max="2025"
-                       value="2025" class="range-input">
+            <div style="display:flex;align-items:center;gap:var(--sp-2);">
+                <input type="range" id="year-start" min="{{ year_min }}" max="{{ year_max }}"
+                       value="{{ year_min }}" class="range-input" aria-label="First year">
+                <input type="range" id="year-end" min="{{ year_min }}" max="{{ year_max }}"
+                       value="{{ year_max }}" class="range-input" aria-label="Last year">
             </div>
         </div>
 
-        <!-- Map type -->
-        <div>
-            <div class="filter-label">Map type</div>
-            <div style="display:flex;gap:0.4rem;">
+        <div class="filter-group">
+            <div class="filter-label">Layer</div>
+            <div style="display:flex;gap:var(--sp-2);">
                 <label class="radio-label">
                     <input type="radio" name="map-type" value="incidents" checked>
                     Incidents
                 </label>
                 <label class="radio-label">
                     <input type="radio" name="map-type" value="heatmap">
-                    Heatmap
+                    Density
                 </label>
             </div>
         </div>
 
-        <!-- Apply -->
-        <div>
-            <button id="apply-btn" class="btn-primary" disabled>Apply filters</button>
+        <div class="filter-group">
+            <button id="apply-btn" class="btn-primary" disabled>Apply</button>
         </div>
 
     </div>
 
-    <div style="margin-top:0.75rem;font-size:0.78rem;color:var(--text-muted);">
-        Dataset: <strong style="color:var(--text-secondary);font-family:var(--font-mono);">{{ total_incidents }}</strong> incidents
-        &nbsp;&middot;&nbsp;
-        <span id="map-status" style="color:var(--amber);">Loading data…</span>
-    </div>
+    <p class="chart-note" style="font-family:var(--font-mono);font-size:var(--fs-micro);">
+        Dataset {{ total_incidents }} incidents
+        &nbsp;·&nbsp;
+        <span id="map-status" style="color:var(--ink-3);">loading…</span>
+    </p>
 </div>
 
 <!-- ── Map ────────────────────────────────────────────────────────────── -->
-<div class="card" style="padding:0;overflow:hidden;border-radius:10px;">
-    <div id="map-div" style="height:580px;"></div>
+<div class="card card--flush" style="overflow:hidden;">
+    <div id="map-div" style="height:600px;"></div>
+</div>
+
+<!-- Légende rendue en HTML : même typographie que le reste du site -->
+<div class="legend-row" id="map-legend" style="border-top:none;">
+    {% for event, color in event_colors.items() %}
+    <span class="legend-item">
+        <span class="legend-swatch" style="--swatch:{{ color }};"></span>{{ event }}
+    </span>
+    {% endfor %}
 </div>
 
 {% endblock %}
 
 {% block scripts %}
+<script id="map-config" type="application/json">
+{{ {"eventColors": event_colors, "eventOrder": event_order, "theme": map_theme} | tojson }}
+</script>
 <script>
 (function () {
-    // ── Palette couleurs (miroir Python) ──────────────────────────────────
-    const EVENT_COLORS = {
-        "Battles":                    "#e74c3c",
-        "Violence against civilians": "#e67e22",
-        "Explosions/Remote violence": "#9b59b6",
-        "Protests":                   "#3498db",
-        "Riots":                      "#f1c40f",
-        "Strategic developments":     "#2ecc71",
-    };
+    const CFG          = JSON.parse(document.getElementById('map-config').textContent);
+    const EVENT_COLORS = CFG.eventColors;
+    const EVENT_ORDER  = CFG.eventOrder;   // du plus létal au résiduel
+    const T            = CFG.theme;
 
     const LAYOUT_BASE = {
         mapbox: { style: "carto-darkmatter", center: { lat: 15.0, lon: -2.0 }, zoom: 5 },
-        margin: { r: 0, t: 0, l: 0, b: 60 },
+        margin: { r: 0, t: 0, l: 0, b: 0 },
         paper_bgcolor: "rgba(0,0,0,0)",
         plot_bgcolor:  "rgba(0,0,0,0)",
-        legend: {
-            bgcolor: "rgba(15,17,23,0.85)",
-            bordercolor: "#2d3250", borderwidth: 1,
-            font: { color: "#e8e8e8", size: 11 },
-            title: { text: "Event Type", font: { color: "#a0a8c0", size: 10 } },
-            orientation: "h",
-            yanchor: "top",
-            y: -0.04,
-            xanchor: "center",
-            x: 0.5,
+        showlegend: false,          // la légende est en HTML, sous la carte
+        hoverlabel: {
+            bgcolor: T.surface3,
+            bordercolor: "rgba(255,255,255,0.18)",
+            font: { family: "IBM Plex Mono, monospace", size: 11, color: T.ink1 },
+            align: "left",
         },
-        height: 580,
+        height: 600,
+    };
+
+    const PLOT_CONFIG = {
+        responsive: true,
+        displaylogo: false,
+        modeBarButtonsToRemove: ['lasso2d', 'select2d', 'toggleHover'],
     };
 
     const statusEl  = document.getElementById('map-status');
+    const legendEl  = document.getElementById('map-legend');
     const applyBtn  = document.getElementById('apply-btn');
     const yearStart = document.getElementById('year-start');
     const yearEnd   = document.getElementById('year-end');
     const yearDisp  = document.getElementById('year-display');
 
-    let ALL_DATA = [];   // données complètes, chargées une seule fois
-    let mapReady = false;
+    let ALL_DATA = [];   // chargées une seule fois, filtrées côté client
 
-    // ── Sync sliders ──────────────────────────────────────────────────────
+    /* Locale explicite : le compteur doit s'écrire comme le total rendu par
+       Flask, juste à côté sur la même ligne. */
+    const fmt = n => n.toLocaleString('en-US');
+
+    function setStatus(text, tone) {
+        statusEl.textContent = text;
+        statusEl.style.color = tone === 'error' ? 'var(--signal)' : 'var(--ink-3)';
+    }
+
+    /* ── Sliders ──────────────────────────────────────────────────────── */
     function syncYears() {
         let s = parseInt(yearStart.value), e = parseInt(yearEnd.value);
         if (s > e) { yearStart.value = e; s = e; }
@@ -130,7 +142,7 @@
     yearStart.addEventListener('input', syncYears);
     yearEnd.addEventListener('input',   syncYears);
 
-    // ── Filtrage client-side ──────────────────────────────────────────────
+    /* ── Filtrage client-side ─────────────────────────────────────────── */
     function applyFilters() {
         const countries = [...document.querySelectorAll('.country-cb:checked')]
                             .map(cb => cb.value);
@@ -139,8 +151,7 @@
         const mapType = document.querySelector('input[name="map-type"]:checked').value;
 
         if (countries.length === 0) {
-            statusEl.textContent = 'Select at least one country.';
-            statusEl.style.color = '#e74c3c';
+            setStatus('select at least one country', 'error');
             return;
         }
 
@@ -148,52 +159,52 @@
             countries.includes(d.co) && d.yr >= ys && d.yr <= ye
         );
 
-        statusEl.textContent = filtered.length.toLocaleString() + ' incidents displayed';
-        statusEl.style.color = '#2ecc71';
+        setStatus(fmt(filtered.length) + ' incidents displayed');
+        legendEl.style.display = mapType === 'heatmap' ? 'none' : 'flex';
 
         mapType === 'heatmap' ? renderHeatmap(filtered) : renderScatter(filtered);
     }
 
-    // ── Scatter (incidents) ───────────────────────────────────────────────
+    /* ── Scatter ──────────────────────────────────────────────────────── */
     function renderScatter(data) {
         const byType = {};
         data.forEach(d => {
-            if (!byType[d.et]) byType[d.et] = {
-                lat: [], lon: [], text: [], size: []
-            };
+            if (!byType[d.et]) byType[d.et] = { lat: [], lon: [], text: [], size: [] };
             const g = byType[d.et];
             g.lat.push(d.la);
             g.lon.push(d.lo);
-            g.size.push(Math.min(22, Math.max(5, d.fa * 0.4 + 5)));
+            g.size.push(Math.min(22, Math.max(4, d.fa * 0.4 + 4)));
             g.text.push(
                 '<b>' + d.et + '</b><br>' +
-                'Date: '       + d.dt + '<br>' +
-                'Country: '    + d.co + '<br>' +
-                'Region: '     + d.r  + '<br>' +
-                'Location: '   + d.lc + '<br>' +
-                'Actor: '      + d.ac + '<br>' +
-                'Fatalities: ' + d.fa
+                d.dt + '<br>' +
+                d.lc + ', ' + d.r + ', ' + d.co + '<br>' +
+                d.ac + '<br>' +
+                'fatalities ' + d.fa
             );
         });
 
-        const traces = Object.entries(byType).map(([et, pts]) => ({
-            type: 'scattermapbox',
-            name: et,
-            lat: pts.lat, lon: pts.lon,
-            mode: 'markers',
-            marker: {
-                color:   EVENT_COLORS[et] || '#95a5a6',
-                size:    pts.size,
-                opacity: 0.75,
-            },
-            text:      pts.text,
-            hoverinfo: 'text',
-        }));
+        /* Les catégories létales sont tracées en dernier, donc au-dessus */
+        const order = EVENT_ORDER.slice().reverse();
+        const traces = order
+            .filter(et => byType[et])
+            .map(et => ({
+                type: 'scattermapbox',
+                name: et,
+                lat: byType[et].lat, lon: byType[et].lon,
+                mode: 'markers',
+                marker: {
+                    color:   EVENT_COLORS[et],
+                    size:    byType[et].size,
+                    opacity: 0.72,
+                },
+                text:      byType[et].text,
+                hoverinfo: 'text',
+            }));
 
-        Plotly.react('map-div', traces, LAYOUT_BASE, { responsive: true });
+        Plotly.react('map-div', traces, LAYOUT_BASE, PLOT_CONFIG);
     }
 
-    // ── Heatmap (density) ─────────────────────────────────────────────────
+    /* ── Densité ──────────────────────────────────────────────────────── */
     function renderHeatmap(data) {
         const trace = {
             type: 'densitymapbox',
@@ -201,37 +212,31 @@
             lon:    data.map(d => d.lo),
             z:      data.map(d => Math.max(1, d.fa)),
             radius: 14,
-            colorscale: [
-                [0,    '#0d1b2a'], [0.25, '#1565c0'],
-                [0.5,  '#00e676'], [0.75, '#ff9800'],
-                [1,    '#e74c3c'],
-            ],
+            colorscale: T.sequential,
             showscale: true,
+            hoverinfo: 'skip',
             colorbar: {
-                title: { text: 'Intensity', font: { color: '#a0a8c0' } },
-                tickfont: { color: '#a0a8c0' },
+                title: { text: 'intensity',
+                         font: { family: 'IBM Plex Mono, monospace', size: 10, color: T.ink4 } },
+                tickfont: { family: 'IBM Plex Mono, monospace', size: 10, color: T.ink3 },
+                outlinewidth: 0,
+                thickness: 8,
+                len: 0.6,
             },
         };
-
-        const layout = Object.assign({}, LAYOUT_BASE, { showlegend: false });
-        Plotly.react('map-div', [trace], layout, { responsive: true });
+        Plotly.react('map-div', [trace], LAYOUT_BASE, PLOT_CONFIG);
     }
 
-    // ── Chargement initial des données (une seule fois) ───────────────────
+    /* ── Chargement initial ───────────────────────────────────────────── */
     fetch('/api/data/map-points')
         .then(r => r.json())
         .then(data => {
-            ALL_DATA  = data;
-            mapReady  = true;
+            ALL_DATA = data;
             applyBtn.disabled = false;
-            statusEl.textContent = data.length.toLocaleString() + ' incidents ready';
-            statusEl.style.color = '#2ecc71';
-            renderScatter(data);  // affichage initial : tous les incidents
+            setStatus(fmt(data.length) + ' incidents displayed');
+            renderScatter(data);
         })
-        .catch(() => {
-            statusEl.textContent = 'Error loading data.';
-            statusEl.style.color = '#e74c3c';
-        });
+        .catch(() => setStatus('failed to load data', 'error'));
 
     applyBtn.addEventListener('click', applyFilters);
 

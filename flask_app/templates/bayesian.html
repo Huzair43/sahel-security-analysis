@@ -4,137 +4,145 @@
 {% block content %}
 
 <div class="page-header">
-    <div class="eyebrow">Sahel Security Analysis</div>
+    <div class="eyebrow">Model</div>
     <h1>Bayesian Analysis</h1>
-    <p class="subtitle">Probabilistic analysis of conflict impact on inflation.</p>
+    <p class="subtitle">
+        Does conflict intensity move consumer price inflation the following year?
+        Hierarchical linear regression, PyMC.
+    </p>
 </div>
 
 {% if error %}
-<div style="background:var(--surface-2);border:1px solid var(--red);border-radius:12px;
-            padding:1.5rem;color:var(--text-secondary);text-align:center;">
-    <strong style="color:var(--red);">Bayesian results not found.</strong><br>
-    Please run <code>notebooks/05_bayesian_model.ipynb</code> first.
+<div class="callout">
+    <strong>Bayesian results not found.</strong><br>
+    Run <code>notebooks/05_bayesian_model.ipynb</code> to generate them.
 </div>
 {% else %}
 
 <!-- ── KPIs ────────────────────────────────────────────────────────────── -->
-<p class="section-title">Model Results at a Glance</p>
-<div class="stat-grid stagger" style="grid-template-columns:repeat(4,1fr);">
-    <div class="stat-card" style="--accent-color:#e74c3c;">
-        <div class="label">β Mean</div>
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="label">β mean</div>
         <div class="value">{{ kpis.beta_mean }}</div>
-        <div class="delta">avg effect of +1 SD conflict on inflation</div>
+        <div class="delta">inflation points per 1 SD of conflict</div>
     </div>
-    <div class="stat-card" style="--accent-color:#9b59b6;">
+    <div class="stat-card">
         <div class="label">94% HDI</div>
-        <div class="value text-value">{{ kpis.hdi }}</div>
-        <div class="delta">credible range for β</div>
+        <div class="value text-value" style="font-family:var(--font-mono);">{{ kpis.hdi }}</div>
+        <div class="delta">credible range for β, includes zero</div>
     </div>
-    <div class="stat-card" style="--accent-color:#2ecc71;">
+    <div class="stat-card">
         <div class="label">P(β &gt; 0)</div>
         <div class="value">{{ kpis.prob_pos }}</div>
-        <div class="delta">conflict increases inflation</div>
+        <div class="delta">conflict raises inflation</div>
     </div>
-    <div class="stat-card" style="--accent-color:#3498db;">
+    <div class="stat-card">
         <div class="label">P(β &lt; 0)</div>
         <div class="value">{{ kpis.prob_neg }}</div>
-        <div class="delta">conflict decreases inflation</div>
+        <div class="delta">conflict lowers inflation</div>
     </div>
 </div>
 
-<hr>
-
-<!-- ── Posterior distribution ─────────────────────────────────────────── -->
-<p class="section-title">Posterior Distribution of β</p>
-<p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:0.8rem;">
+<!-- ── Posterior ───────────────────────────────────────────────────────── -->
+<h2 class="section-title">Posterior distribution of β</h2>
+<p class="lede">
     The full probability distribution over the conflict effect on inflation.
-    A distribution centered on zero means the effect is uncertain.
+    A distribution straddling zero means the sign of the effect is undetermined.
 </p>
-<div class="card chart-container card-framed">{{ chart_posterior | safe }}</div>
 
-<hr>
+<div class="card chart-container">
+    <div class="chart-head">
+        <div class="chart-title">Posterior density</div>
+        <div class="chart-meta">16,000 draws, 4 chains</div>
+    </div>
+    {{ chart_posterior | safe }}
+</div>
 
 <!-- ── Scatter ─────────────────────────────────────────────────────────── -->
-<p class="section-title">Conflict Intensity vs Inflation, Raw Data</p>
-<p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:0.8rem;">
-    Each point represents one country-year observation.
-    The trend line shows the direction suggested by the data.
+<h2 class="section-title">Conflict intensity against inflation</h2>
+<p class="lede">
+    One point per country and year, sized by annual fatalities.
+    The dotted line is an ordinary least squares fit on the pooled points.
 </p>
-<div class="card chart-container card-framed">{{ chart_scatter | safe }}</div>
 
-<hr>
-
-<!-- ── Model interpretation ───────────────────────────────────────────── -->
-<p class="section-title">How to Read This Model</p>
-<div class="charts-row">
-    <div class="card card-framed" style="font-size:0.85rem;color:var(--text-secondary);line-height:1.7;">
-        <p style="color:var(--text-primary);font-weight:600;margin-bottom:0.6rem;">What the model estimates</p>
-        <p>We fit a Bayesian hierarchical linear regression:</p>
-        <pre style="background:var(--surface-1);border:1px solid var(--border-subtle);border-radius:8px;
-                    padding:0.75rem;margin:0.6rem 0;color:#2ecc71;font-size:0.78rem;overflow-x:auto;">
-inflation(t) = α_country + β × conflict(t-1) + ε</pre>
-        <ul style="padding-left:1.2rem;margin-top:0.4rem;">
-            <li><strong style="color:var(--text-primary);">α</strong> = country-specific baseline inflation</li>
-            <li><strong style="color:var(--text-primary);">β</strong> = effect of lagged conflict on inflation</li>
-            <li><strong style="color:var(--text-primary);">ε</strong> = unexplained noise</li>
-        </ul>
-        <p style="margin-top:0.8rem;">
-            <strong style="color:var(--text-primary);">Key finding:</strong><br>
-            β = {{ "%.3f"|format(model.beta_mean) }} with 94% HDI
-            [{{ "%.2f"|format(model.hdi_low) }}, {{ "%.2f"|format(model.hdi_high) }}]<br>
-            The HDI includes zero, we <strong style="color:var(--red);">cannot conclusively establish</strong>
-            a positive or negative causal effect.
-        </p>
+<div class="card chart-container">
+    <div class="chart-head">
+        <div class="chart-title">Conflict at T minus 1 against inflation at T</div>
+        <div class="chart-meta">{{ n_obs }} country years</div>
     </div>
-
-    <div class="card card-framed" style="font-size:0.85rem;color:var(--text-secondary);line-height:1.7;">
-        <p style="color:var(--text-primary);font-weight:600;margin-bottom:0.6rem;">Why the result is uncertain</p>
-        <table class="data-table" style="margin-bottom:0.8rem;">
-            <thead><tr><th>Limitation</th><th>Impact</th></tr></thead>
-            <tbody>
-                <tr><td>N = 12 observations</td><td>Low statistical power</td></tr>
-                <tr><td>Annual national CPI</td><td>Too aggregated</td></tr>
-                <tr><td>No confounders</td><td>Rainfall, oil prices not controlled</td></tr>
-                <tr><td>Linear model only</td><td>May miss threshold effects</td></tr>
-            </tbody>
-        </table>
-        <p>
-            P(β &gt; 0) = {{ "%.1f"|format(model.prob_pos) }}%: conflict <em>may</em> increase inflation<br>
-            P(β &lt; 0) = {{ "%.1f"|format(model.prob_neg) }}%: conflict <em>may</em> decrease inflation<br>
-            Neither is conclusive. Sub-national monthly data would significantly
-            improve the model's power.
-        </p>
-    </div>
+    {{ chart_scatter | safe }}
 </div>
 
-<!-- ── Model spec (collapsible) ───────────────────────────────────────── -->
-<details style="margin-top:1.5rem;">
-    <summary style="cursor:pointer;color:var(--text-secondary);font-size:0.85rem;
-                    padding:0.75rem 1rem;background:var(--surface-1);
-                    border:1px solid var(--border-subtle);
-                    border-radius:8px;list-style:none;font-weight:600;
-                    transition:color 0.2s;">
-        ▶ Methodology, Bayesian Hierarchical Model
-    </summary>
-    <div class="card" style="margin-top:0.5rem;font-size:0.83rem;
-                              color:var(--text-secondary);line-height:1.8;">
-        <p style="color:var(--text-primary);font-weight:600;">Model Specification</p>
-        <pre style="background:var(--surface-1);border:1px solid var(--border-subtle);
-                    border-radius:8px;padding:0.75rem;color:#2ecc71;
-                    font-size:0.78rem;overflow-x:auto;">
-Hierarchical model:
-  μ_α ~ Normal(3, 5)
-  σ_α ~ HalfNormal(3)
-  α_c ~ Normal(μ_α, σ_α)   # country-specific intercept
-  β   ~ Normal(0, 2)         # shared effect across countries
-  σ   ~ HalfNormal(5)
-  inflation ~ Normal(α_c + β × conflict_z, σ)</pre>
-        <p style="margin-top:0.8rem;">
-            <strong style="color:var(--text-primary);">Sampling:</strong>
-            NUTS sampler, 4,000 draws × 4 chains = 16,000 posterior samples,
-            2,000 tuning steps, target_accept = 0.95, All R-hat = 1.0<br>
-            <strong style="color:var(--text-primary);">Software:</strong> PyMC v5, ArviZ, Python 3.10
-        </p>
+<!-- ── Interpretation ──────────────────────────────────────────────────── -->
+<h2 class="section-title">How to read this model</h2>
+
+<div class="charts-row">
+
+    <div class="card">
+        <div class="chart-head">
+            <div class="chart-title">What the model estimates</div>
+        </div>
+        <div class="prose">
+            <p>A Bayesian hierarchical linear regression:</p>
+            <pre class="code-block">inflation(t) = α_country + β × conflict(t-1) + ε</pre>
+            <ul>
+                <li><strong>α</strong>, country specific baseline inflation</li>
+                <li><strong>β</strong>, effect of lagged conflict on inflation</li>
+                <li><strong>ε</strong>, unexplained noise</li>
+            </ul>
+            <p>
+                <strong>Key finding.</strong>
+                β = {{ "%.3f"|format(model.beta_mean) }}, 94% HDI
+                [{{ "%.2f"|format(model.hdi_low) }}, {{ "%.2f"|format(model.hdi_high) }}].
+                The interval contains zero, so the data do not establish a
+                positive or negative effect.
+            </p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="chart-head">
+            <div class="chart-title">Why the result is uncertain</div>
+        </div>
+        <table class="data-table" style="margin-bottom:var(--sp-4);">
+            <thead><tr><th>Limitation</th><th>Consequence</th></tr></thead>
+            <tbody>
+                <tr><td>N = 12 observations</td><td class="cell-quiet">Low statistical power</td></tr>
+                <tr><td>Annual national CPI</td><td class="cell-quiet">Too aggregated</td></tr>
+                <tr><td>No confounders</td><td class="cell-quiet">Rainfall, oil prices uncontrolled</td></tr>
+                <tr><td>Linear model only</td><td class="cell-quiet">Misses threshold effects</td></tr>
+            </tbody>
+        </table>
+        <div class="prose">
+            <p>
+                P(β &gt; 0) = {{ "%.1f"|format(model.prob_pos) }}%, conflict may raise inflation.<br>
+                P(β &lt; 0) = {{ "%.1f"|format(model.prob_neg) }}%, conflict may lower it.
+                Neither is conclusive. Sub national monthly price data would
+                substantially improve the model.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── Model spec ──────────────────────────────────────────────────────── -->
+<details class="disclosure" style="margin-top:var(--sp-5);">
+    <summary>Model specification and sampling</summary>
+    <div class="card" style="margin-top:var(--sp-2);">
+        <div class="prose">
+            <pre class="code-block">μ_α ~ Normal(3, 5)
+σ_α ~ HalfNormal(3)
+α_c ~ Normal(μ_α, σ_α)     # country specific intercept
+β   ~ Normal(0, 2)         # effect shared across countries
+σ   ~ HalfNormal(5)
+inflation ~ Normal(α_c + β × conflict_z, σ)</pre>
+            <p>
+                <strong>Sampling.</strong> NUTS, 4,000 draws over 4 chains,
+                16,000 posterior samples, 2,000 tuning steps,
+                target_accept 0.95, all R hat at 1.0.<br>
+                <strong>Software.</strong> PyMC v5, ArviZ, Python 3.10.
+            </p>
+        </div>
     </div>
 </details>
 

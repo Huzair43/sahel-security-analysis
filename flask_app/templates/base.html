@@ -24,7 +24,7 @@
     <aside class="sidebar" id="sidebar">
 
         <div class="sidebar-brand">
-            <div class="eyebrow">Security Intelligence</div>
+            <div class="eyebrow">Open source intelligence</div>
             <div class="title">Sahel Security<br>Analysis</div>
         </div>
 
@@ -105,7 +105,7 @@
             <div class="nav-divider"></div>
 
             <!-- AI Chat trigger -->
-            <button class="nav-item chat-trigger" id="chat-trigger" aria-label="Open AI Chat">
+            <button class="chat-trigger" id="chat-trigger" aria-label="Open AI Chat">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                      fill="none" stroke="currentColor" stroke-width="2"
                      stroke-linecap="round" stroke-linejoin="round">
@@ -118,9 +118,9 @@
         </nav>
 
         <div class="sidebar-footer">
-            <div class="classification">Open source intelligence</div>
-            Sahel Security Analysis<br>
-            Built with ACLED data
+            <div class="classification">Data source</div>
+            ACLED, 2020 : 2025<br>
+            IMF World Economic Outlook
         </div>
 
     </aside>
@@ -150,10 +150,7 @@
         <!-- Messages -->
         <div class="chat-messages" id="chat-messages">
             <div class="chat-msg assistant">
-                <div class="chat-bubble">
-                    Ask me anything about conflict data in Burkina Faso, Mali, and Niger.
-                    Try: <em>"How many incidents in Mali in 2023?"</em>
-                </div>
+                <div class="chat-bubble chat-bubble--intro">Ask me anything about conflict data in Burkina Faso, Mali, and Niger. Try: <em>"How many incidents in Mali in 2023?"</em></div>
             </div>
         </div>
 
@@ -187,7 +184,7 @@
     </div>
 
     <!-- ── Main ─────────────────────────────────────────────────────────── -->
-    <main class="main page-enter" id="main-content">
+    <main class="main" id="main-content">
         {% block content %}{% endblock %}
     </main>
 
@@ -210,7 +207,12 @@ overlay.addEventListener('click', () => {
 });
 
 /* ── Animated counter ─────────────────────────────────────────────────── */
+const prefersReducedMotion =
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 function animateCounter(el) {
+    if (prefersReducedMotion) return;
+
     const raw   = el.textContent.trim();
     const isNum = /^[\d,]+$/.test(raw);
     if (!isNum) return;
@@ -224,7 +226,10 @@ function animateCounter(el) {
     function step(now) {
         const progress = Math.min((now - start) / duration, 1);
         const ease     = 1 - Math.pow(1 - progress, 3);
-        el.textContent = Math.round(ease * target).toLocaleString();
+        /* Locale explicite : toLocaleString() sans argument suit la locale du
+           navigateur et affiche "23 156" en français, alors que le reste du
+           site (rendu Python et étiquettes Plotly) écrit "23,156". */
+        el.textContent = Math.round(ease * target).toLocaleString('en-US');
         if (progress < 1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
@@ -280,13 +285,15 @@ async function fetchStatus() {
         const r   = await fetch('/api/chat/status');
         const data = await r.json();
         const label = document.getElementById('chat-model-label');
+        const dot   = document.querySelector('.chat-live-dot');
         if (data.available) {
-            const backend = data.backend === 'local' ? 'Gemma via Ollama' : data.model + ' via Groq';
-            label.textContent = backend;
-            label.style.color = 'var(--teal)';
+            label.textContent = data.backend === 'local'
+                ? 'Gemma via Ollama'
+                : data.model + ' via Groq';
+            dot.className = 'chat-live-dot online';
         } else {
             label.textContent = 'Backend unavailable';
-            label.style.color = 'var(--red)';
+            dot.className = 'chat-live-dot offline';
         }
     } catch (_) {}
 }

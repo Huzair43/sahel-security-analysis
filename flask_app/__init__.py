@@ -17,6 +17,10 @@ def create_app():
 
     compress.init_app(app)
 
+    # ── Design system : template Plotly global ────────────────────────────────
+    from flask_app.theme import register as register_theme
+    register_theme()
+
     # ── Blueprints ────────────────────────────────────────────────────────────
     from flask_app.routes.main import main_bp
     from flask_app.routes.map import map_bp

@@ -3,6 +3,14 @@
 An open-source intelligence platform analyzing armed conflict dynamics and their economic consequences in Burkina Faso, Mali, and Niger, built on ACLED data, Bayesian modeling, and a RAG-powered AI analyst.
 
 **Live demo:** [sahel-security-analysis.onrender.com](https://sahel-security-analysis.onrender.com/)
+First load takes 30 to 60 seconds: the free Render instance spins down when idle.
+
+---
+
+![Conflict map](docs/screenshots/conflict-map.png)
+
+*23,156 ACLED incidents rendered with Plotly WebGL. Marker size encodes fatalities,
+colour encodes event type, filtering runs entirely in the browser.*
 
 ---
 
@@ -12,7 +20,20 @@ An open-source intelligence platform analyzing armed conflict dynamics and their
 - Tracks monthly trends, detects anomalies (Z-score), and projects a 6-month forecast via linear regression
 - Identifies geographic hotspots and most active armed groups
 - Quantifies the conflict-inflation relationship through a Bayesian hierarchical model (PyMC, ArviZ)
-- Exposes an AI analyst powered by a RAG pipeline: questions answered from the ACLED dataset, no hallucination
+- Exposes an AI analyst powered by a RAG pipeline: answers are constrained to context retrieved from the ACLED dataset
+
+![Overview](docs/screenshots/overview.png)
+
+*Key metrics, distribution by country and by event type, monthly trend.*
+
+![Trend and projection](docs/screenshots/trends-forecast.png)
+
+*Rolling averages, fitted linear trend and a 6-month baseline projection.*
+
+![AI analyst](docs/screenshots/ai-chat.png)
+
+*Questions answered from context retrieved in the ACLED DataFrame with Pandas,
+then passed to Llama 3.1 through Groq.*
 
 ---
 
@@ -39,6 +60,8 @@ flask_app/
 │   └── backend_groq.py    # Llama 3.1 via Groq API (production)
 ├── utils/
 │   └── data_loader.py     # lru_cache data loading
+├── theme.py         # Design system: colour palettes + global Plotly template
+├── static/css/      # Design tokens and components (no CSS framework)
 └── templates/       # Jinja2 templates extending base.html
 ```
 
@@ -76,9 +99,19 @@ The AI analyst uses a two-stage pipeline:
 
 ```bash
 python -m venv .venv
-.venv\Scripts\activate      # Windows
+source .venv/bin/activate   # macOS, Linux
 pip install -r requirements.txt
 cp .env.example .env        # fill GROQ_API_KEY or set CHAT_BACKEND=local
+python run.py
+```
+
+On Windows (PowerShell):
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+Copy-Item .env.example .env
 python run.py
 ```
 
@@ -88,7 +121,7 @@ App available at `http://localhost:5000`.
 
 ```bash
 # Install Ollama: https://ollama.com/download
-ollama pull gemma4:latest
+ollama pull gemma2:2b
 ```
 
 Set in `.env`:
@@ -96,7 +129,7 @@ Set in `.env`:
 ```
 CHAT_BACKEND=local
 OLLAMA_HOST=http://localhost:11434
-OLLAMA_MODEL=gemma4:latest
+OLLAMA_MODEL=gemma2:2b
 ```
 
 Then run `python run.py`.
@@ -107,7 +140,9 @@ Then run `python run.py`.
 docker-compose up --build
 ```
 
-Ollama pulls the model on first start. Flask waits for it before serving.
+Ollama pulls the model on first start. `depends_on` only waits for the Ollama
+container to start, not for the pull to finish, so the chat returns an error
+until the model is downloaded (a few minutes on first run).
 
 ---
 
